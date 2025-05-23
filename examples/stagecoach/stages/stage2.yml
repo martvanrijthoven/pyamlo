@@ -1,0 +1,17 @@
+_includes:
+  - [stage.yml, stagecoach]
+  # - [training.yml, yamlotorch]
+  # - [adam.yml, yamlotorch]
+  # - [adam.yml, yamlotorch]
+
+stagecoach:
+  output_folder: ${output_folder}/mystage2
+  stage_inputs:
+  stage_outputs:
+    another_output:
+      path: ${stagecoach.output_folder}/stage2.txt
+  check_get: ${stagecoach.stage_outputs.output_folder}
+check_get: ${stages.stage1.stagecoach.stage_outputs.output_folder}
+
+
+

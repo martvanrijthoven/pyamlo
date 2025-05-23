@@ -1,0 +1,54 @@
+site_name: Yamlo Documentation
+site_url: https://your-username.github.io/yamlo/ # CHANGE THIS
+repo_url: https://github.com/your-username/yamlo/ # CHANGE THIS
+repo_name: your-username/yamlo # CHANGE THIS
+edit_uri: edit/main/docs/ # Or appropriate branch/path
+
+theme:
+  name: material
+  palette:
+    # Palette toggle for light vs dark mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+# Updated Navigation
+nav:
+  - Home: index.md
+  - Features: features.md
+  - API Reference: api.md

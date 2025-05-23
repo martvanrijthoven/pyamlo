@@ -1,0 +1,9 @@
+# Your original base.yml content
+# No changes needed
+ssettings:
+  thresholds: [1, 2, 3]
+  options:
+    a: alpha
+    b: beta
+
+

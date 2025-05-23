@@ -1,0 +1,3 @@
+_includes:
+  - [training.yml, yamlotorch]
+  - [ptest2.yml, yamlotorch]

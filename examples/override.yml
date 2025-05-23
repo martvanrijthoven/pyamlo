@@ -1,0 +1,6 @@
+# Your original override.yml content
+# No changes needed (assuming numpy is installed)
+ssettings:
+  thresholds: !extend [4, 5]          # → [1, 2, 3, 4, 5]
+  options: !patch {b: bravo, c: charlie} # → {a: alpha, b: bravo, c: charlie}
+  extra: !@numpy.array [4, 2, 4]      # Requires numpy installed

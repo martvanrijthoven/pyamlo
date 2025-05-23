@@ -1,0 +1,40 @@
+# Adjusted include paths relative to the examples dir
+# Assumes this file is run from the package root directory
+_includes:
+  - examples/base.yml
+  - examples/override.yml
+  # - examples/training.yml
+
+testenv: !env MY_TEST_VAR # Changed var name for clarity, ensure it's set
+
+ssettings:
+  thresholds: !extend [6, 7]
+  options: {'d': 'dino'}
+
+inclusion_test:
+  test2: 2
+
+app:
+  name: TestApp
+  version: "2.0"
+
+paths:
+  base: !@pathlib.Path /opt/${app.name}
+  data: !@pathlib.Path
+    - ${paths.base}
+    - data
+
+services:
+  main: !@yamlo.SystemInfo
+  secondary: !@yamlo.SystemInfo
+
+hostdefault: !@yamlo.call "${services.main.as_dict}" 
+
+pipeline:
+  composite:
+    first: ${services.main.host}    # Interpolation using resolved object attribute
+    second: ${services.secondary} # Reference resolved instance directly
+
+logs:
+  - !@pathlib.Path /logs/${app.name}/main.log
+  - !@pathlib.Path /logs/${app.name}/${services.main.host}.log

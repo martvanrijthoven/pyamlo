@@ -1,0 +1,10 @@
+system_info: !@yamlo.SystemInfo
+
+name: experiment
+
+output_folder: /Users/mart.van.rijthoven/Code/yamlo/examples/output/${name}
+stages_folder: /Users/mart.van.rijthoven/Code/yamlo/examples/stagecoach/stages
+
+stages: 
+  stage1: !include ${stages_folder}/stage1.yml
+  stage2: !include ${stages_folder}/stage2.yml

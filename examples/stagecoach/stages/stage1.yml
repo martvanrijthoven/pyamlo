@@ -1,0 +1,11 @@
+_includes:
+  - [stage.yml, stagecoach]
+
+stagecoach:
+  output_folder: ${output_folder}/mystage1
+  stage_outputs:
+    another_output:
+      path: ${stagecoach.output_folder}/stage1.txt
+
+
+
