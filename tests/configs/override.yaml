@@ -1,0 +1,6 @@
+app:
+  version: "2.0"
+list: !extend [4, 5]
+dict: !patch
+  b: 3
+  c: 4

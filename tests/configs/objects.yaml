@@ -1,0 +1,8 @@
+path: !@pathlib.Path /tmp/test
+sysinfo: !@yamlo.SystemInfo
+call: !@yamlo.call "${sysinfo.as_dict}"
+counter: !@collections.Counter 
+ - [1,1,1,4,5]
+complex: !@complex
+  real: 2
+  imag: 3

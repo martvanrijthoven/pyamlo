@@ -1,11 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "yamlo"
 version = "0.1.0"
-description = "Add your description here"
+description = "Flexible YAML configuration loader with advanced features."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+license = { file = "LICENSE" }
+authors = [
+  { name = "Mart van Rijthoven", email = "your@email.com" }
+]
+dependencies = [
+  "pyyaml>=6.0",
+]
 
 
 [project.optional-dependencies]
-test = ["pytest", "numpy", "torch", "torchvision"]
+test = [
+  "pytest",
+  "numpy",
+  "torch",
+  "torchvision"
+]
+docs = [
+  "mkdocs",
+  "mkdocs-material"
+]
+
+
+[project.scripts]
+yamlo = "yamlo.__main__:main"
+
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "yamlo/",
+  "examples/",
+  "tests/",
+  "README.md",
+  "LICENSE",
+]
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["yamlo"]

@@ -36,8 +36,5 @@ class SystemInfo:
     def as_dict(self) -> Mapping[str, Any]:
         return asdict(self)
 
-def call(calling, **kwargs):
-    if not kwargs:
-        return calling()
-    return calling(**kwargs)
+
 

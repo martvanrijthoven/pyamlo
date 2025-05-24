@@ -4,6 +4,14 @@ repo_url: https://github.com/your-username/yamlo/ # CHANGE THIS
 repo_name: your-username/yamlo # CHANGE THIS
 edit_uri: edit/main/docs/ # Or appropriate branch/path
 
+nav:
+  - Home: index.md
+  - Features: features.md
+  - API Reference: api.md
+  - Best Practices: best-practices.md
+  - FAQ: faq.md
+  - Examples: examples.md
+
 theme:
   name: material
   palette:
@@ -46,9 +54,3 @@ markdown_extensions:
       alternate_style: true
   - toc:
       permalink: true
-
-# Updated Navigation
-nav:
-  - Home: index.md
-  - Features: features.md
-  - API Reference: api.md

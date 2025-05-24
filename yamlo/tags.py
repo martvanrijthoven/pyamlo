@@ -49,11 +49,22 @@ class ConfigLoader(SafeLoader):
 
 
 def construct_env(loader: ConfigLoader, node: Union[ScalarNode, MappingNode]) -> Any:
-    var = loader.construct_scalar(node)
-    val = os.environ.get(var)
-    if val is None:
-        raise ResolutionError(f"Environment variable '{var}' not set {node.start_mark}")
-    return val
+    if isinstance(node, ScalarNode):
+        var = loader.construct_scalar(node)
+        val = os.environ.get(var)
+        if val is None:
+            raise ResolutionError(f"Environment variable '{var}' not set {node.start_mark}")
+        return val
+    elif isinstance(node, MappingNode):
+        mapping = loader.construct_mapping(node, deep=True)
+        var = mapping.get("var") or mapping.get("name")
+        default = mapping.get("default")
+        val = os.environ.get(var, default)
+        if val is None:
+            raise ResolutionError(f"Environment variable '{var}' not set and no default provided {node.start_mark}")
+        return val
+    else:
+        raise TagError(f"!env must be used with a scalar or mapping node at {node.start_mark}")
 
 
 def construct_extend(loader: ConfigLoader, node: SequenceNode) -> ExtendSpec:
