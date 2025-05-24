@@ -2,7 +2,7 @@
 Yamlo: A flexible YAML configuration loader.
 """
 
-__version__ = "0.0.1"
+from .__about__ import __version__
 
 from .config import load_config, SystemInfo
 from .resolve import call

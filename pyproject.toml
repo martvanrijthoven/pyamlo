@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "yamlo"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Flexible YAML configuration loader with advanced features."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -12,6 +12,28 @@ license = { file = "LICENSE" }
 authors = [
   { name = "Mart van Rijthoven", email = "your@email.com" }
 ]
+keywords = ["yaml", "configuration", "loader", "interpolation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+urls = {
+    "Documentation" = "https://martvanrijthoven.github.io/yamlo/",
+    "Source" = "https://github.com/martvanrijthoven/yamlo",
+    "Issues" = "https://github.com/martvanrijthoven/yamlo/issues",
+    "Changelog" = "https://github.com/martvanrijthoven/yamlo/releases",
+}
+
+[tool.hatch.build.targets.wheel.shared-data]
+"docs" = "share/doc/yamlo"
+"LICENSE" = "share/doc/yamlo"
+
+[tool.hatch.version]
+path = "yamlo/__about__.py"
 dependencies = [
   "pyyaml>=6.0",
 ]
@@ -20,13 +42,23 @@ dependencies = [
 [project.optional-dependencies]
 test = [
   "pytest",
+  "pytest-cov",
   "numpy",
   "torch",
   "torchvision"
 ]
 docs = [
-  "mkdocs",
-  "mkdocs-material"
+  "mkdocs>=1.5.0",
+  "mkdocs-material>=9.0.0",
+  "mkdocstrings[python]>=0.20.0",
+  "mkdocs-git-revision-date-localized-plugin>=1.2.0",
+  "mkdocs-git-committers-plugin>=1.1.1"
+]
+dev = [
+  "yamlo[test,docs]",
+  "black>=23.0.0",
+  "ruff>=0.1.0",
+  "mypy>=1.0.0"
 ]
 
 
@@ -46,3 +78,34 @@ include = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["yamlo"]
+
+
+[tool.hatch.envs.default]
+dependencies = [
+  "yamlo[dev]"
+]
+
+[tool.hatch.envs.test]
+dependencies = [
+  "yamlo[test]"
+]
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.12"]
+
+[tool.hatch.envs.test.scripts]
+run = "pytest {args:tests}"
+cov = "pytest --cov=yamlo --cov-report=term-missing --cov-report=html tests/ {args}"
+
+[tool.hatch.envs.docs]
+dependencies = [
+  "yamlo[docs]"
+]
+
+[tool.hatch.envs.docs.scripts]
+build = "mkdocs build --clean --strict"
+serve = "mkdocs serve --dev-addr localhost:8000"
+deploy = "mkdocs gh-deploy --force"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "yamlo/__about__.py"
