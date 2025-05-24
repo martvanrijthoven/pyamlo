@@ -115,3 +115,4 @@ uv.lock
 
 # example data for testing
 data
+*/__about__.py

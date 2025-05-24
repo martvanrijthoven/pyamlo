@@ -1,10 +1,11 @@
 import getpass
 import platform
 import socket
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import IO, Any, Mapping
+from typing import IO, Any
 
 import yaml
 
@@ -14,8 +15,7 @@ from yamlo.tags import ConfigLoader
 
 
 def load_config(stream: IO[str]) -> tuple[dict[str, Any], dict[str, Any]]:
-    """
-    Parse YAML from `stream`, apply includes, merges, tags, and
+    """Parse YAML from `stream`, apply includes, merges, tags, and
     variable interpolation. Returns config
     """
     raw: dict[str, Any] = yaml.load(stream, Loader=ConfigLoader)
@@ -31,10 +31,7 @@ class SystemInfo:
     arch: str = field(default_factory=platform.machine)
     python: str = field(default_factory=platform.python_version)
     cwd: str = field(default_factory=lambda: str(Path.cwd()))
-    started: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    started: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def as_dict(self) -> Mapping[str, Any]:
         return asdict(self)
-
-
-

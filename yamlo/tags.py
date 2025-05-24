@@ -1,6 +1,6 @@
 import os
 from collections import UserDict, UserList
-from typing import Any, Optional, Union
+from typing import Any, Hashable, Optional, Union
 
 from yaml import MappingNode, SafeLoader, ScalarNode, SequenceNode
 
@@ -20,7 +20,7 @@ class ExtendSpec(UserList):
 
 
 class PatchSpec(UserDict):
-    def __init__(self, mapping: dict[str, Any]) -> None:
+    def __init__(self, mapping: dict[Hashable, Any]) -> None:
         super().__init__(mapping)
         self.mapping = mapping
 
@@ -53,18 +53,24 @@ def construct_env(loader: ConfigLoader, node: Union[ScalarNode, MappingNode]) ->
         var = loader.construct_scalar(node)
         val = os.environ.get(var)
         if val is None:
-            raise ResolutionError(f"Environment variable '{var}' not set {node.start_mark}")
+            raise ResolutionError(
+                f"Environment variable '{var}' not set {node.start_mark}"
+            )
         return val
     elif isinstance(node, MappingNode):
         mapping = loader.construct_mapping(node, deep=True)
-        var = mapping.get("var") or mapping.get("name")
+        var = mapping.get("var") or mapping.get("name")  # type: ignore
         default = mapping.get("default")
         val = os.environ.get(var, default)
         if val is None:
-            raise ResolutionError(f"Environment variable '{var}' not set and no default provided {node.start_mark}")
+            raise ResolutionError(
+                f"Environment variable '{var}' not set and no default provided {node.start_mark}"
+            )
         return val
     else:
-        raise TagError(f"!env must be used with a scalar or mapping node at {node.start_mark}")
+        raise TagError(
+            f"!env must be used with a scalar or mapping node at {node.start_mark}"
+        )
 
 
 def construct_extend(loader: ConfigLoader, node: SequenceNode) -> ExtendSpec:
@@ -85,9 +91,9 @@ def construct_callspec(
     node: Union[MappingNode, SequenceNode, ScalarNode],
 ) -> CallSpec:
     if isinstance(node, MappingNode):
-        mapping: dict[str, Any] = loader.construct_mapping(node, deep=True)
+        mapping: dict[Hashable, Any] = loader.construct_mapping(node, deep=True)
         id_ = mapping.pop("id", None)
-        return CallSpec(suffix, [], mapping, id_)
+        return CallSpec(suffix, [], mapping, id_)  # type: ignore
     if isinstance(node, SequenceNode):
         seq: list[Any] = loader.construct_sequence(node, deep=True)
         return CallSpec(suffix, seq, {}, None)

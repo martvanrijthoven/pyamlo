@@ -49,7 +49,8 @@ dev = [
   "yamlo[test,docs]",
   "black>=23.0.0",
   "ruff>=0.1.0",
-  "mypy>=1.0.0"
+  "mypy>=1.0.0",
+  "types-PyYAML"
 ]
 
 [project.scripts]
@@ -78,7 +79,8 @@ dependencies = [
 
 [tool.hatch.envs.test]
 dependencies = [
-  "yamlo[test]"
+  "yamlo[test]",
+  "click"
 ]
 
 [[tool.hatch.envs.test.matrix]]
@@ -97,6 +99,16 @@ dependencies = [
 build = "mkdocs build --clean --strict"
 serve = "mkdocs serve --dev-addr localhost:8000"
 deploy = "mkdocs gh-deploy --force"
+
+[tool.hatch.envs.check]
+dependencies = [
+  "yamlo[dev]",
+]
+
+[tool.hatch.envs.check.scripts]
+formatting = "black yamlo"
+linting    = "ruff check yamlo"
+typing     = "mypy yamlo"
 
 [tool.hatch.build.hooks.vcs]
 version-file = "yamlo/__about__.py"

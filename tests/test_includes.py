@@ -56,7 +56,7 @@ def test_include_construction():
 
 
 def test_include_error():
-    node = MappingNode("!include", []) 
+    node = MappingNode("!include", [])
     with pytest.raises(
         ConstructorError, match="expected a scalar node, but found mapping"
     ):
@@ -65,7 +65,7 @@ def test_include_error():
 
 def test_construct_include_error():
     loader = ConfigLoader("")
-    node = MappingNode("!include", [])  
+    node = MappingNode("!include", [])
     with pytest.raises(
         ConstructorError, match="expected a scalar node, but found mapping"
     ):

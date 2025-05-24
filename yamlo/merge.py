@@ -20,7 +20,7 @@ def deep_merge(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
         existing = a.get(key)
         match existing, val:
             case CallSpec() as callspec, PatchSpec(mapping=m):
-                callspec.kwargs = m
+                callspec.kwargs = m  # type: ignore
             case CallSpec() as callspec, dict() as mapping:
                 deep_merge(callspec.kwargs, mapping)
             case list() as base_list, ExtendSpec(items=more):
@@ -41,7 +41,7 @@ def deep_merge(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
 
 def load_raw(path: str) -> dict[str, Any]:
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             return yaml.load(f, Loader=ConfigLoader)
     except FileNotFoundError as e:
         raise IncludeError(f"Include file not found: '{path}'") from e
@@ -72,7 +72,7 @@ def _load_pkg_include(fn: str, prefix: str) -> dict[str, Any]:
         pkg = importlib.import_module(prefix)
     except ImportError:
         return load_raw(fn)
-    base = os.path.dirname(pkg.__file__)
+    base = str(os.path.dirname(pkg.__file__))  # type: ignore
     cfg_path = os.path.join(base, "configuration", fn)
     return {prefix: load_raw(cfg_path)}
 
