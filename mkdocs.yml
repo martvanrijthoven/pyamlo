@@ -1,16 +1,16 @@
 site_name: Yamlo Documentation
-site_url: https://your-username.github.io/yamlo/ # CHANGE THIS
-repo_url: https://github.com/your-username/yamlo/ # CHANGE THIS
-repo_name: your-username/yamlo # CHANGE THIS
+site_url: https://martvanrijthoven.github.io/yamlo/ # CHANGE THIS
+repo_url: https://github.com/martvanrijthoven/yamlo/ # CHANGE THIS
+repo_name: martvanrijthoven/yamlo # CHANGE THIS
 edit_uri: edit/main/docs/ # Or appropriate branch/path
 
 nav:
   - Home: index.md
   - Features: features.md
-  - API Reference: api.md
+  - Examples: examples.md
   - Best Practices: best-practices.md
   - FAQ: faq.md
-  - Examples: examples.md
+  
 
 theme:
   name: material

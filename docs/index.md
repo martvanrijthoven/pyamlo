@@ -6,6 +6,22 @@ Yamlo is a flexible YAML configuration loader for Python, designed for advanced 
 
 ---
 
+
+## Why Yamlo?
+
+- **Composable configs**: Use `_includes` to merge multiple YAML files.
+- **Powerful merging**: Deep merge, extend lists, or patch dicts.
+- **Environment aware**: Inject environment variables and use defaults.
+- **Python objects**: Instantiate classes/functions directly from YAML
+- **Interpolation**: 
+    - **Variables**: Use `${var}` to reference other config values.
+    - **Strings**: Use `${var}_my_string` to reference other config values combined with strings.
+    - **Instances**: Use `${object.property}` to reference instantiated objects and their properties.
+
+
+---
+
+
 ## Quick Start
 
 ```bash
@@ -35,26 +51,6 @@ print(config['greeting'])  # Hello, MyWebApp!
 print(config['database_url'])  # postgres://web.local:8080/maindb
 ```
 
----
 
-## Why Yamlo?
-
-- **Composable configs**: Use `_includes` to merge multiple YAML files.
-- **Powerful merging**: Deep merge, extend lists, or patch dicts.
-- **Python objects**: Instantiate classes/functions directly from YAML.
-- **Environment aware**: Inject environment variables and use defaults.
-- **Instance tracking**: Reference objects by ID for advanced workflows.
 
 ---
-
-## Next Steps
-
-- [Features](features.md)
-- [API Reference](api.md)
-- [Best Practices](best-practices.md)
-- [FAQ](faq.md)
-- [Examples](examples.md)
-
-
-
-

@@ -15,16 +15,13 @@ Yamlo enhances standard YAML loading with several powerful features designed to 
 - Inject environment variables directly into your config.
 - Supports default values: `!env {var: NAME, default: ...}`
 
-## Variable Interpolation (`${...}`)
-- Reference other config values, including attributes of instantiated objects.
-
 ## Python Object Instantiation (`!@`)
 - Instantiate Python classes or call functions directly from YAML.
 - Supports positional, keyword, and scalar arguments.
-- Track instances by ID for later reference.
 
-## Instance Tracking
-- Store and reference instantiated objects by ID for advanced workflows.
+## Variable Interpolation (`${...}`)
+- Reference other config values, including instantiated objects and their properties.
+
 
 ---
 
