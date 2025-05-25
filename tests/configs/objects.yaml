@@ -1,5 +1,5 @@
 path: !@pathlib.Path /tmp/test
-sysinfo: !@ypamlo.SystemInfo
+sysinfo: !@ypyamlo.SystemInfo
 call: !@pyamlo.call "${sysinfo.as_dict}"
 counter: !@collections.Counter 
  - [1,1,1,4,5]
