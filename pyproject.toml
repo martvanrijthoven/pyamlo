@@ -95,7 +95,7 @@ cov = "pytest --cov=yamlo --cov-report=term-missing --cov-report=html tests/ {ar
 
 [tool.hatch.envs.docs]
 dependencies = [
-  "yamlo[docs]"
+  "pyamlo[docs]"
 ]
 
 [tool.hatch.envs.docs.scripts]
