@@ -1,7 +1,7 @@
-site_name: Yamlo Documentation
-site_url: https://martvanrijthoven.github.io/yamlo/ # CHANGE THIS
-repo_url: https://github.com/martvanrijthoven/yamlo/ # CHANGE THIS
-repo_name: martvanrijthoven/yamlo # CHANGE THIS
+site_name: PYAMLO Documentation
+site_url: https://martvanrijthoven.github.io/pyamlo/ # CHANGE THIS
+repo_url: https://github.com/martvanrijthoven/pyamlo/ # CHANGE THIS
+repo_name: martvanrijthoven/pyamlo # CHANGE THIS
 edit_uri: edit/main/docs/ # Or appropriate branch/path
 
 nav:
@@ -53,7 +53,7 @@ plugins:
       enable_creation_date: true
       type: date
   - git-committers:
-      repository: martvanrijthoven/yamlo
+      repository: martvanrijthoven/pyamlo
       branch: main
 
 markdown_extensions:

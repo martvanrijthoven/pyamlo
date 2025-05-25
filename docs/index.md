@@ -1,8 +1,8 @@
-# Yamlo Documentation
+# PYAMLO Documentation
 
-Welcome to the official documentation for **yamlo**.
+Welcome to the official documentation for **PYAMLO**.
 
-Yamlo is a flexible YAML configuration loader for Python, designed for advanced configuration scenarios. It supports file inclusion, deep merging, environment variable injection, variable interpolation, and direct Python object instantiation from YAML.
+PYAMLO is a  YAML configuration loader for Python, designed for advanced configuration scenarios. It supports file inclusion, deep merging, environment variable injection, variable interpolation, and direct Python object instantiation from YAML.
 
 ---
 
@@ -25,7 +25,7 @@ Yamlo is a flexible YAML configuration loader for Python, designed for advanced 
 ## Quick Start
 
 ```bash
-pip install yamlo
+pip install pyamlo
 # or, for development
 uv pip install .[test,docs]
 ```
@@ -41,7 +41,7 @@ greeting: Hello, ${app.name}!
 database_url: postgres://${app.host}:${app.port}/maindb
 ```
 
-You can load and resolve it using yamlo:
+You can load and resolve it using PYAMLO:
 
 ```python
 from yamlo import load_config

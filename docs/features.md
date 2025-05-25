@@ -1,6 +1,6 @@
 # Features
 
-Yamlo enhances standard YAML loading with several powerful features designed to handle complex configurations.
+PYAMLO enhances standard YAML loading with several powerful features designed to handle complex configurations.
 
 ## Includes (`_includes`)
 - Structure your configuration across multiple files using the `_includes` key.

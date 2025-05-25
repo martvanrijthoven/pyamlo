@@ -12,7 +12,7 @@
 - Use `${...}` for referencing both config values and object attributes.
 
 ## Testing Configs
-- Use yamlo in your test suite to validate all config files load and resolve as expected.
+- Use PYAMLO in your test suite to validate all config files load and resolve as expected.
 - Example pytest:
   ```python
   import pytest
