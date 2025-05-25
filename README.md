@@ -5,7 +5,7 @@
 [![Tests](https://github.com/martvanrijthoven/yamlo/actions/workflows/test.yml/badge.svg)](https://github.com/martvanrijthoven/yamlo/actions/workflows/test.yml)
 [![GitHub](https://img.shields.io/github/license/martvanrijthoven/yamlo)](https://github.com/martvanrijthoven/yamlo2/blob/main/LICENSE)
 
-`yamlo` is a flexible YAML configuration loader for Python, designed for advanced configuration scenarios. It supports file inclusion, deep merging, environment variable injection, variable interpolation, and direct Python object instantiation from YAML.
+`yamlo` is a  YAML configuration loader for Python, designed for advanced configuration scenarios. It supports file inclusion, deep merging, environment variable injection, variable interpolation, and direct Python object instantiation from YAML and object instance referencing including their properties.
 
 ## Features
 
@@ -13,7 +13,8 @@
 - **Merging:** Deep merge dictionaries, extend lists (`!extend`), and patch/replace dictionaries (`!patch`).
 - **Environment Variables:** Substitute values using `!env VAR_NAME` or `!env {var: NAME, default: ...}`.
 - **Variable Interpolation:** Reference other configuration values using `${path.to.value}` syntax.
-- **Object Instantiation:** Create Python objects directly from YAML using `!@module.path.ClassName` or `!@module.path.func`. Store instances with IDs for later reference.
+- **Object Instantiation:** Create Python objects directly from YAML using `!@module.path.ClassName` or `!@module.path.func`
+- **Instance Referencing:** Use `${instance}` to reference instantiated objects and their properties. Or `${instance.attr}` to reference attributes of instantiated objects.
 
 ## Example
 
