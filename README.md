@@ -1,10 +1,10 @@
-# Yamlo: YAML Configuration Loader
+# PYAMLO: YAML Configuration Loader
 
 [![PyPI](https://img.shields.io/pypi/v/pyamlo?color=0&label=pypi%20package)](https://pypi.org/project/pyamlo/)
-[![Tests](https://github.com/martvanrijthoven/yamlo/actions/workflows/test.yml/badge.svg)](https://github.com/martvanrijthoven/yamlo/actions/workflows/test.yml)
-[![License](https://img.shields.io/github/license/martvanrijthoven/yamlo)](https://github.com/martvanrijthoven/yamlo/blob/main/LICENSE)
+[![Tests](https://github.com/martvanrijthoven/pyamlo/actions/workflows/test.yml/badge.svg)](https://github.com/martvanrijthoven/pyamlo/actions/workflows/test.yml)
+[![License](https://img.shields.io/github/license/martvanrijthoven/pyamlo)](https://github.com/martvanrijthoven/pyamlo/blob/main/LICENSE)
 
-`yamlo` is a  YAML configuration loader for Python, designed for advanced configuration scenarios. It supports file inclusion, deep merging, environment variable injection, variable interpolation, and direct Python object instantiation from YAML and object instance referencing including their properties.
+`PYAMLO` is a  YAML configuration loader for Python, designed for advanced configuration scenarios. It supports file inclusion, deep merging, environment variable injection, variable interpolation, and direct Python object instantiation from YAML and object instance referencing including their properties.
 
 ## Features
 
@@ -61,14 +61,6 @@ pip install .[test,docs]
 ```
 
 ## Usage
-
-After installation, you can use the CLI:
-
-```bash
-yamlo examples/test_config.yaml
-```
-
-Or use as a Python library:
 
 ```python
 from yamlo import load_config
