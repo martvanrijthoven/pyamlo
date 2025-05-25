@@ -9,9 +9,9 @@ from yamlo.tags import ConfigLoader, ResolutionError, TagError, construct_env
 
 
 def test_env_vars(tmp_path):
-    os.environ["YAMLO_DB_USER"] = "yamlo_user"
-    os.environ["YAMLO_DB_PASS"] = "yamlo_pass"
-    os.environ["YAMLO_MY_VAR"] = "yamlo_env"
+    os.environ["TEST_DB_USER"] = "yamlo_user"
+    os.environ["TEST_DB_PASS"] = "yamlo_pass"
+    os.environ["MY_TEST_VAR"] = "yamlo_env"
 
     src = Path(__file__).parent / "configs" / "env.yaml"
     config_path = tmp_path / "env.yaml"
