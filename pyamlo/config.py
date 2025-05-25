@@ -9,9 +9,9 @@ from typing import IO, Any
 
 import yaml
 
-from yamlo.merge import process_includes
-from yamlo.resolve import Resolver
-from yamlo.tags import ConfigLoader
+from pyamlo.merge import process_includes
+from pyamlo.resolve import Resolver
+from pyamlo.tags import ConfigLoader
 
 
 def load_config(stream: IO[str]) -> tuple[dict[str, Any], dict[str, Any]]:

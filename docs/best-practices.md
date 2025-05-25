@@ -16,7 +16,7 @@
 - Example pytest:
   ```python
   import pytest
-  from yamlo import load_config
+  from pyamlo import load_config
   @pytest.mark.parametrize("fname", ["prod.yaml", "dev.yaml"])
   def test_config_loads(fname):
       with open(fname) as f:

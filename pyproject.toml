@@ -31,7 +31,7 @@ dependencies = [
 
 [tool.hatch]
 version.source = "vcs"
-build.hooks.vcs.version-file = "yamlo/__about__.py"
+build.hooks.vcs.version-file = "pyamlo/__about__.py"
 
 [tool.hatch.version.raw-options]
 local_scheme = "no-local-version"
@@ -57,12 +57,12 @@ dev = [
 ]
 
 [project.scripts]
-yamlo = "yamlo.__main__:main"
+pyamlo = "pyamlo.__main__:main"
 
 
 [tool.hatch.build.targets.sdist]
 include = [
-  "yamlo/",
+  "pyamlo/",
   "examples/",
   "tests/",
   "README.md",
@@ -72,7 +72,7 @@ include = [
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["yamlo"]
+packages = ["pyamlo"]
 
 
 [tool.hatch.envs.default]
@@ -91,7 +91,7 @@ python = ["3.12"]
 
 [tool.hatch.envs.test.scripts]
 run = "pytest {args:tests}"
-cov = "pytest --cov=yamlo --cov-report=term-missing --cov-report=html tests/ {args}"
+cov = "pytest --cov=pyamlo --cov-report=term-missing --cov-report=html tests/ {args}"
 
 [tool.hatch.envs.docs]
 dependencies = [
@@ -109,7 +109,7 @@ dependencies = [
 ]
 
 [tool.hatch.envs.check.scripts]
-formatting = "black yamlo"
-linting    = "ruff check yamlo"
-typing     = "mypy yamlo"
+formatting = "black pyamlo"
+linting    = "ruff check pyamlo"
+typing     = "mypy pyamlo"
 

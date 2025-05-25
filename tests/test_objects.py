@@ -4,11 +4,11 @@ from pathlib import Path
 
 from yaml import ScalarNode
 
-from yamlo import load_config
-from yamlo.config import SystemInfo
-from yamlo.merge import deep_merge
-from yamlo.resolve import call
-from yamlo.tags import CallSpec, ConfigLoader, PatchSpec, construct_callspec
+from pyamlo import load_config
+from pyamlo.config import SystemInfo
+from pyamlo.merge import deep_merge
+from pyamlo.resolve import call
+from pyamlo.tags import CallSpec, ConfigLoader, PatchSpec, construct_callspec
 
 
 def test_object_instantiation():

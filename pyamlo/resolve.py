@@ -4,8 +4,8 @@ from functools import singledispatchmethod
 from inspect import Parameter, signature
 from typing import Any
 
-from yamlo.merge import load_raw, process_includes
-from yamlo.tags import CallSpec, IncludeSpec, ResolutionError
+from pyamlo.merge import load_raw, process_includes
+from pyamlo.tags import CallSpec, IncludeSpec, ResolutionError
 
 
 class Resolver:

@@ -5,9 +5,9 @@ import pytest
 from yaml import MappingNode, ScalarNode
 from yaml.constructor import ConstructorError
 
-from yamlo import load_config
-from yamlo.merge import IncludeError, _load_include, _load_pkg_include, load_raw
-from yamlo.tags import ConfigLoader, construct_include
+from pyamlo import load_config
+from pyamlo.merge import IncludeError, _load_include, _load_pkg_include, load_raw
+from pyamlo.tags import ConfigLoader, construct_include
 
 
 def test_includes_and_merging(tmp_path):

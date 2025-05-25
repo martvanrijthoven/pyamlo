@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 from yaml import MappingNode, ScalarNode
 
-from yamlo.config import load_config
-from yamlo.tags import ConfigLoader, ResolutionError, TagError, construct_env
+from pyamlo.config import load_config
+from pyamlo.tags import ConfigLoader, ResolutionError, TagError, construct_env
 
 
 def test_env_vars(tmp_path):

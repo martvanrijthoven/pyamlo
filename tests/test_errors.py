@@ -3,10 +3,10 @@ import os
 import pytest
 from yaml import ScalarNode
 
-from yamlo import load_config
-from yamlo.merge import MergeError, deep_merge
-from yamlo.resolve import ResolutionError, Resolver, _apply_call
-from yamlo.tags import (
+from pyamlo import load_config
+from pyamlo.merge import MergeError, deep_merge
+from pyamlo.resolve import ResolutionError, Resolver, _apply_call
+from pyamlo.tags import (
     ConfigLoader,
     ExtendSpec,
     PatchSpec,

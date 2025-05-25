@@ -33,7 +33,7 @@ log_path: !@pathlib.Path /var/log/myapp.log
 
 **Basic Example:**
 ```python
-from yamlo import load_config
+from pyamlo import load_config
 with open('examples/test_config.yaml') as f:
     config, instances = load_config(f)
 ```

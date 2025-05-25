@@ -1,5 +1,5 @@
 """
-Yamlo: A flexible YAML configuration loader.
+PYAMLO: A flexible YAML configuration loader.
 """
 
 from .config import SystemInfo, load_config

@@ -1,6 +1,6 @@
 path: !@pathlib.Path /tmp/test
-sysinfo: !@yamlo.SystemInfo
-call: !@yamlo.call "${sysinfo.as_dict}"
+sysinfo: !@ypamlo.SystemInfo
+call: !@pyamlo.call "${sysinfo.as_dict}"
 counter: !@collections.Counter 
  - [1,1,1,4,5]
 complex: !@complex

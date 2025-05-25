@@ -25,10 +25,10 @@ paths:
     - data
 
 services:
-  main: !@yamlo.SystemInfo
-  secondary: !@yamlo.SystemInfo
+  main: !@pyamlo.SystemInfo
+  secondary: !@pyamlo.SystemInfo
 
-hostdefault: !@yamlo.call "${services.main.as_dict}" 
+hostdefault: !@pyamlo.call "${services.main.as_dict}" 
 
 pipeline:
   composite:

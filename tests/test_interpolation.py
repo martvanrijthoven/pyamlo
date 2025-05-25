@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from yamlo import load_config
-from yamlo.resolve import Resolver
-from yamlo.tags import IncludeSpec, ResolutionError
+from pyamlo import load_config
+from pyamlo.resolve import Resolver
+from pyamlo.tags import IncludeSpec, ResolutionError
 
 
 def test_interpolation(tmp_path):

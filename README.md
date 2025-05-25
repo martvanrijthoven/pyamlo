@@ -35,10 +35,10 @@ paths:
     - data
 
 services:
-  main: !@yamlo.SystemInfo
-  secondary: !@yamlo.SystemInfo
+  main: !@pyamlo.SystemInfo
+  secondary: !@pyamlo.SystemInfo
 
-hostdefault: !@yamlo.call "${services.main.as_dict}" 
+hostdefault: !@pyamlo.call "${services.main.as_dict}" 
 
 pipeline:
   composite:
@@ -63,7 +63,7 @@ pip install .[test,docs]
 ## Usage
 
 ```python
-from yamlo import load_config
+from pyamlo import load_config
 
 config = load_config("examples/test_config.yaml")
 print(config)

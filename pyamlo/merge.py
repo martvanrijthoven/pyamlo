@@ -4,7 +4,7 @@ from typing import Any
 
 import yaml
 
-from yamlo.tags import CallSpec, ConfigLoader, ExtendSpec, PatchSpec
+from pyamlo.tags import CallSpec, ConfigLoader, ExtendSpec, PatchSpec
 
 
 class MergeError(Exception):

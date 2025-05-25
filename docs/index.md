@@ -7,7 +7,7 @@ PYAMLO is a  YAML configuration loader for Python, designed for advanced configu
 ---
 
 
-## Why Yamlo?
+## Why PYAMLO?
 
 - **Composable configs**: Use `_includes` to merge multiple YAML files.
 - **Powerful merging**: Deep merge, extend lists, or patch dicts.
@@ -44,7 +44,7 @@ database_url: postgres://${app.host}:${app.port}/maindb
 You can load and resolve it using PYAMLO:
 
 ```python
-from yamlo import load_config
+from pyamlo import load_config
 with open("config.yaml") as f:
     config, instances = load_config(f)
 print(config['greeting'])  # Hello, MyWebApp!
