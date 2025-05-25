@@ -1,22 +1,9 @@
 # Best Practices
 
-## Organizing Configurations
-- Use `_includes` to split configs by environment, secrets, or team.
-- Keep secrets and environment-specific values in separate files, loaded only in relevant environments.
-
 ## Using Environment Variables
 - Always provide a default for non-critical env vars:
   ```yaml
   db_url: !env {var: DATABASE_URL, default: "sqlite:///default.db"}
-  ```
-
-## Instance IDs
-- Use `id:` for all important objects/functions you want to reference elsewhere.
-- Example:
-  ```yaml
-  main_db: !@mydb.Database
-    dsn: ${db_url}
-    id: main_db
   ```
 
 ## Avoiding Common Pitfalls
@@ -38,5 +25,3 @@
   ```
 
 ---
-
-See [FAQ](faq.md) for troubleshooting and [API Reference](api.md) for more details.

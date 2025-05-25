@@ -22,7 +22,4 @@ Yamlo enhances standard YAML loading with several powerful features designed to 
 ## Variable Interpolation (`${...}`)
 - Reference other config values, including instantiated objects and their properties.
 
-
 ---
-
-See [API Reference](api.md) for advanced usage and examples.
