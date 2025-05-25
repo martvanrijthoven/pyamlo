@@ -1,11 +1,18 @@
+import os
 from pathlib import Path
+
 import pytest
-from yaml import ScalarNode, MappingNode
+from yaml import MappingNode, ScalarNode
+
 from yamlo.config import load_config
-from yamlo.tags import construct_env, ConfigLoader, TagError, ResolutionError
+from yamlo.tags import ConfigLoader, ResolutionError, TagError, construct_env
 
 
 def test_env_vars(tmp_path):
+    os.environ["YAMLO_DB_USER"] = "yamlo_user"
+    os.environ["YAMLO_DB_PASS"] = "yamlo_pass"
+    os.environ["YAMLO_MY_VAR"] = "yamlo_env"
+
     src = Path(__file__).parent / "configs" / "env.yaml"
     config_path = tmp_path / "env.yaml"
     config_path.write_text(src.read_text())
