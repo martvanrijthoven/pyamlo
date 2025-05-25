@@ -49,7 +49,7 @@ docs = [
   "mkdocs-git-committers-plugin"
 ]
 dev = [
-  "yamlo[test,docs]",
+  "pyyamlo[test,docs]",
   "black>=23.0.0",
   "ruff>=0.1.0",
   "mypy>=1.0.0",
@@ -77,12 +77,12 @@ packages = ["yamlo"]
 
 [tool.hatch.envs.default]
 dependencies = [
-  "yamlo[dev]"
+  "pyamlo[dev]"
 ]
 
 [tool.hatch.envs.test]
 dependencies = [
-  "yamlo[test]",
+  "pyamlo[test]",
   "click"
 ]
 
@@ -105,7 +105,7 @@ deploy = "mkdocs gh-deploy --force"
 
 [tool.hatch.envs.check]
 dependencies = [
-  "yamlo[dev]",
+  "pyamlo[dev]",
 ]
 
 [tool.hatch.envs.check.scripts]
