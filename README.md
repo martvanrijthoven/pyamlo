@@ -1,9 +1,9 @@
-# Yamlo: Flexible YAML Configuration Loader
+# Yamlo: YAML Configuration Loader
 
-[![PyPI - Version](https://img.shields.io/pypi/v/yamlo)](https://pypi.org/project/yamlo/) <!-- Add after publishing -->
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/yamlo)](https://pypi.org/project/yamlo/) <!-- Add after publishing -->
-[![Tests](https://github.com/your-username/yamlo/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/yamlo/actions/workflows/ci.yml) <!-- CHANGE THIS -->
-[![License](https://img.shields.io/pypi/l/yamlo)](./LICENSE) <!-- Add after publishing -->
+[![PyPI - Version](https://img.shields.io/pypi/v/yamlo)](https://pypi.org/project/yamlo/) 
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/yamlo)](https://pypi.org/project/yamlo/) 
+[![Tests](https://github.com/martvanrijthoven/yamlo/actions/workflows/test.yml/badge.svg)](https://github.com/martvanrijthoven/yamlo/actions/workflows/test.yml)
+[![GitHub](https://img.shields.io/github/license/martvanrijthoven/yamlo)](https://github.com/martvanrijthoven/yamlo2/blob/main/LICENSE)
 
 `yamlo` is a flexible YAML configuration loader for Python, designed for advanced configuration scenarios. It supports file inclusion, deep merging, environment variable injection, variable interpolation, and direct Python object instantiation from YAML.
 
