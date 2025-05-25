@@ -1,7 +1,6 @@
 # Yamlo: YAML Configuration Loader
 
-[![PyPI - Version](https://img.shields.io/pypi/v/yamlo)](https://pypi.org/project/pyamlo/) 
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/yamlo)](https://pypi.org/project/pyamlo/) 
+[![PyPI](https://img.shields.io/pypi/v/pyamlo?color=0&label=pypi%20package)](https://pypi.org/project/pyamlo/)
 [![Tests](https://github.com/martvanrijthoven/yamlo/actions/workflows/test.yml/badge.svg)](https://github.com/martvanrijthoven/yamlo/actions/workflows/test.yml)
 [![License](https://img.shields.io/github/license/martvanrijthoven/yamlo)](https://github.com/martvanrijthoven/yamlo/blob/main/LICENSE)
 
