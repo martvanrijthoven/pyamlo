@@ -5,7 +5,7 @@ from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import IO, Any
+from typing import IO, Any, Union
 
 import yaml
 
@@ -14,11 +14,24 @@ from pyamlo.resolve import Resolver
 from pyamlo.tags import ConfigLoader
 
 
-def load_config(stream: IO[str]) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Parse YAML from `stream`, apply includes, merges, tags, and
-    variable interpolation. Returns config
+def load_config(
+    source: Union[str, Path, IO[str]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Parse YAML from a file path or file object, apply includes, merges, tags, and
+    variable interpolation.
+
+    Args:
+        source: Either a path to a YAML file (as string or Path) or a file-like object
+
+    Returns:
+        The resolved configuration dictionary and instances dictionary
     """
-    raw: dict[str, Any] = yaml.load(stream, Loader=ConfigLoader)
+    if isinstance(source, (str, Path)):
+        with open(source, "r") as f:
+            raw: dict[str, Any] = yaml.load(f, Loader=ConfigLoader)
+    else:
+        raw = yaml.load(source, Loader=ConfigLoader)
+
     merged: dict[str, Any] = process_includes(raw)
     return Resolver().resolve(merged)
 

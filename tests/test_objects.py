@@ -13,6 +13,15 @@ from pyamlo.tags import CallSpec, ConfigLoader, PatchSpec, construct_callspec
 
 def test_object_instantiation():
     config_path = Path(__file__).parent / "configs" / "objects.yaml"
+    config = load_config(config_path)
+    assert isinstance(config["path"], pathlib.Path)
+    assert str(config["path"]) == "/tmp/test"
+    assert hasattr(config["sysinfo"], "as_dict")
+    assert isinstance(config["call"], dict)
+
+
+def test_object_instantiation_with_file_object():
+    config_path = Path(__file__).parent / "configs" / "objects.yaml"
     with open(config_path, "r") as f:
         config = load_config(f)
     assert isinstance(config["path"], pathlib.Path)
