@@ -2,7 +2,7 @@
 
 Welcome to the official documentation for **PYAMLO**.
 
-PYAMLO is a  YAML configuration loader for Python, designed for advanced configuration scenarios. It supports file inclusion, deep merging, environment variable injection, variable interpolation, and direct Python object instantiation from YAML.
+PYAMLO is a  YAML configuration loader for Python, designed for advanced configuration scenarios. It supports file inclusion, deep merging, environment variable injection, variable interpolation, and direct object instantiation.
 
 ---
 
@@ -46,7 +46,7 @@ You can load and resolve it using PYAMLO:
 ```python
 from pyamlo import load_config
 with open("config.yaml") as f:
-    config, instances = load_config(f)
+    config = load_config(f)
 print(config['greeting'])  # Hello, MyWebApp!
 print(config['database_url'])  # postgres://web.local:8080/maindb
 ```
