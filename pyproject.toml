@@ -49,7 +49,7 @@ docs = [
   "mkdocs-git-committers-plugin"
 ]
 dev = [
-  "pyyamlo[test,docs]",
+  "pyamlo[test,docs]",
   "black>=23.0.0",
   "ruff>=0.1.0",
   "mypy>=1.0.0",
@@ -79,12 +79,14 @@ packages = ["pyamlo"]
 dependencies = [
   "pyamlo[dev]"
 ]
+pip-args = ["--upgrade", "--pre"]
 
 [tool.hatch.envs.test]
 dependencies = [
   "pyamlo[test]",
   "click"
 ]
+pip-args = ["--upgrade", "--pre"]
 
 [[tool.hatch.envs.test.matrix]]
 python = ["3.12"]
@@ -107,9 +109,12 @@ deploy = "mkdocs gh-deploy --force"
 dependencies = [
   "pyamlo[dev]",
 ]
+pip-args = ["--upgrade", "--pre"]
 
 [tool.hatch.envs.check.scripts]
 formatting = "black pyamlo"
 linting    = "ruff check pyamlo"
 typing     = "mypy pyamlo"
+all    = "black pyamlo && ruff check pyamlo && mypy pyamlo"
+
 

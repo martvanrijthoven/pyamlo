@@ -5,12 +5,3 @@ list: [1, 2, 3]
 dict:
   a: 1
   b: 2
-pipeline:
-  preprocess: !@pyamlo.Step
-    name: preprocess
-  train: !@pyamlo.Step
-    name: train
-    inputs: ${pipeline.preprocess.outputs}
-  evaluate: !@pyamlo.Step
-    name: evaluate
-    inputs: ${pipeline.train.outputs}
