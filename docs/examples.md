@@ -24,48 +24,32 @@ api_key: !env {var: API_KEY, default: "not-set"}
 log_path: !@pathlib.Path /var/log/myapp.log
 ```
 
-**Parameters:**
-- `stream`: A file-like object (e.g., from `open('config.yaml')`).
-
-**Returns:**
-- `config`: The fully resolved configuration dictionary.
-- `instances`: A dictionary of Python objects instantiated via `!@` tags (internal tracking, not user-facing).
-
-**Basic Example:**
-```python
-from pyamlo import load_config
-with open('examples/test_config.yaml') as f:
-    config, instances = load_config(f)
-```
-
 ---
 
 ## Advanced Usage
+.
 
-### Dynamic Includes and Environment-Driven Configs
+### Deep Merging, Dict Patching and List Extension
 ```yaml
 _includes:
   - base.yaml
-  - !env {var: EXTRA_CONFIG, default: 'optional.yaml'}
-```
-Dynamically include files based on environment variables.
 
-### Deep Merging, List Extension, and Patching
+users:
+  admin: !patch 
+    user: root
+    id: 1
+  guests: !extend ["guest2"]
+
+```
+Where `base.yaml` contains:
 ```yaml
 users:
-  admins: ["root"]
+  admin:
+    name: root
+    value: 1
   guests: ["guest1"]
-
-_includes:
-  - override.yaml
 ```
-Where `override.yaml` contains:
-```yaml
-users:
-  admins: !extend ["admin1", "admin2"]
-  guests: !patch ["guest2"]
-```
-Result: `admins` is `["root", "admin1", "admin2"]`, `guests` is `["guest2"]`.
+Result: `admin` is `{'user': 'root', 'id': 1}`, `guests` is `["guest1", "guest2"]`.
 
 ### Python Object Instantiation
 ```yaml
@@ -78,63 +62,22 @@ worker: !@myapp.Worker
 ```
 Reference the actual Python object via `${main_db}` elsewhere in the config.
 
-### Function Calls and Attribute Interpolation
-```yaml
-now: !@datetime.datetime.now
-
-log_path: !@pathlib.Path
-  - /logs
-  - ${now.year}
-  - ${now.month}
-  - app.log
-```
-Creates a log path with the current year and month.
 
 ### Advanced Variable Interpolation
-Supports nested and attribute-based interpolation:
+
+!!! note
+    The `ml` module used in this example is fictional and used for demonstration purposes only. It illustrates how you might structure a machine learning pipeline configuration using PYAMLO's variable interpolation features.
+
 ```yaml
 pipeline:
-  step1: !@myapp.Step
+  preprocess: !@ml.PreprocessStep
     name: preprocess
-  step2: !@myapp.Step
+  train: !@ml.TrainStep
     name: train
-    depends_on: ${pipeline.step1}
-  step3: !@myapp.Step
+    inputs: ${pipeline.preprocess.outputs}
+  evaluate: !@ml.EvaluateStep
     name: evaluate
-    depends_on: ${pipeline.train}
-```
-
-### Full Example: ML Pipeline
-```yaml
-_includes:
-  - base.yaml
-  - !env {var: EXTRA_CONFIG, default: 'ml_override.yaml'}
-
-experiment:
-  name: "exp1"
-  started: !@datetime.datetime.now
-
-paths:
-  root: !@pathlib.Path /mnt/data/${experiment.name}
-  logs: !@pathlib.Path ${paths.root}/logs
-
-model:
-  type: resnet50
-  weights: !env {var: MODEL_WEIGHTS, default: null}
-
-train:
-  dataset: !@myml.load_dataset
-    path: ${paths.root}/train
-    batch_size: 32
-  optimizer: !@torch.optim.Adam
-    lr: 0.001
-  epochs: 10
-
-callbacks:
-  - !@myml.EarlyStopping
-      patience: 5
-  - !@myml.ModelCheckpoint
-      path: ${paths.logs}/best.pt
+    inputs: ${pipeline.train.outputs}
 ```
 
 ---
