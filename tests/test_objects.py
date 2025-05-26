@@ -66,3 +66,17 @@ def test_config_call():
 
     assert call(lambda: 42) == 42
     assert call(example_fn, a=10) == 10
+
+
+def test_import_tag():
+    yaml_content = """
+path_class: !import pathlib.Path
+counter_class: !import collections.Counter
+"""
+    from io import StringIO
+    config = load_config(StringIO(yaml_content))
+
+    assert config["path_class"] is pathlib.Path
+    assert config["counter_class"] is Counter
+    assert callable(config["path_class"])
+    assert callable(config["counter_class"])

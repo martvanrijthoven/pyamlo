@@ -15,6 +15,9 @@ PYAMLO enhances standard YAML loading with several powerful features designed to
 - Inject environment variables directly into your config.
 - Supports default values: `!env {var: NAME, default: ...}`
 
+## Python Module Import (`!import`)
+- Import Python modules, classes, or functions without instantiation.
+
 ## Python Object Instantiation (`!@`)
 - Instantiate Python classes or call functions directly from YAML.
 - Supports positional, keyword, and scalar arguments.

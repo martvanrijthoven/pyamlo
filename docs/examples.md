@@ -19,6 +19,15 @@ _includes:
 api_key: !env {var: API_KEY, default: "not-set"}
 ```
 
+## Python Module Import
+```yaml
+# Import a class
+datetime: !import datetime.datetime
+
+# use the imported class
+current_time: !@pyamlo.call ${datetime.now}
+```
+
 ## Python Object Instantiation
 ```yaml
 log_path: !@pathlib.Path /var/log/myapp.log
@@ -79,5 +88,3 @@ pipeline:
     name: evaluate
     inputs: ${pipeline.train.outputs}
 ```
-
----

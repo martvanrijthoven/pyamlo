@@ -44,6 +44,11 @@ class IncludeSpec:
         self.path = path
 
 
+class ImportSpec:
+    def __init__(self, path: str):
+        self.path = path
+
+
 class ConfigLoader(SafeLoader):
     pass
 
@@ -108,8 +113,15 @@ def construct_include(loader: ConfigLoader, node: ScalarNode) -> IncludeSpec:
     return IncludeSpec(loader.construct_scalar(node))
 
 
+def construct_import(loader: ConfigLoader, node: ScalarNode) -> ImportSpec:
+    if not isinstance(node, ScalarNode):
+        raise TagError(f"!import must be used with a string path at {node.start_mark}")
+    return ImportSpec(loader.construct_scalar(node))
+
+
 ConfigLoader.add_multi_constructor("!@", construct_callspec)
 ConfigLoader.add_constructor("!env", construct_env)
 ConfigLoader.add_constructor("!extend", construct_extend)
 ConfigLoader.add_constructor("!patch", construct_patch)
 ConfigLoader.add_constructor("!include", construct_include)
+ConfigLoader.add_constructor("!import", construct_import)

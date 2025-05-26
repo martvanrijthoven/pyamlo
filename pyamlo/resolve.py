@@ -5,7 +5,7 @@ from inspect import Parameter, signature
 from typing import Any
 
 from pyamlo.merge import load_raw, process_includes
-from pyamlo.tags import CallSpec, IncludeSpec, ResolutionError
+from pyamlo.tags import CallSpec, ImportSpec, IncludeSpec, ResolutionError
 
 
 class Resolver:
@@ -18,6 +18,10 @@ class Resolver:
     @singledispatchmethod
     def resolve(self, node: Any, path: str = "") -> Any:
         return node
+
+    @resolve.register
+    def _(self, node: ImportSpec, path: str = "") -> Any:
+        return _import_attr(node.path)
 
     @resolve.register
     def _(self, node: IncludeSpec, path: str = "") -> Any:
