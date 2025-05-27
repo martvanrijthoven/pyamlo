@@ -1,5 +1,7 @@
 # PYAMLO: YAML Configuration Loader
 
+> ⚠️ **Development Status**: This project is in development. APIs may change without warning.
+
 [![PyPI](https://img.shields.io/pypi/v/pyamlo?color=0&label=pypi%20package)](https://pypi.org/project/pyamlo/)
 [![Tests](https://github.com/martvanrijthoven/pyamlo/actions/workflows/test.yml/badge.svg)](https://github.com/martvanrijthoven/pyamlo/actions/workflows/test.yml)
 [![License](https://img.shields.io/github/license/martvanrijthoven/pyamlo)](https://github.com/martvanrijthoven/pyamlo/blob/main/LICENSE)
