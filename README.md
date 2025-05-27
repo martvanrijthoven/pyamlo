@@ -73,15 +73,12 @@ print(config)
 
 ## Development
 
-- **Run tests:**  
-  `pytest`
+- **tests:**  
+  - `hatch run test:run`
 
-- **Build docs:**  
-  `mkdocs serve`
+- **docs:**
+  - `hatch run docs:build`
+  - `hatch run docs:serve`
 
-- **Build package:**  
-  `hatch build`
-
-## License
-
-See [LICENSE](LICENSE).
+- **black/ruff/mypy:**
+  - `hatch run check:all`
