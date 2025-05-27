@@ -43,6 +43,10 @@ theme:
     - content.tabs.link
     - content.code.annotation
     - content.code.copy
+    - announce.dismiss   # Allow users to dismiss the announcement
+
+  # Add announcement bar
+  announce: This project is in development. APIs may change without warning.
 extra_css:
   - stylesheets/extra.css
 
