@@ -55,11 +55,7 @@ logs:
 ## Installation
 
 ```bash
-# Using uv (recommended)
-uv pip install .[test,docs]
-
-# Using pip
-pip install .[test,docs]
+pip install pyamlo
 ```
 
 ## Usage
@@ -72,6 +68,8 @@ print(config)
 ```
 
 ## Development
+- **installation:**  
+  - `pip install -e ".[test,docs]"`
 
 - **tests:**  
   - `hatch run test:run`
