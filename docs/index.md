@@ -29,8 +29,6 @@ PYAMLO is a  YAML configuration loader for Python, designed for advanced configu
 
 ```bash
 pip install pyamlo
-# or, for development
-uv pip install .[test,docs]
 ```
 
 Given a simple YAML file `config.yaml`:
