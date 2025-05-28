@@ -1,6 +1,6 @@
 # Adjusted include paths relative to the examples dir
 # Assumes this file is run from the package root directory
-_includes:
+include!:
   - examples/base.yml
   - examples/override.yml
   # - examples/training.yml

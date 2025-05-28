@@ -9,7 +9,7 @@ app:
 
 ## Multi-file Include
 ```yaml
-_includes:
+include!:
   - base.yaml
   - override.yaml
 ```
@@ -40,7 +40,7 @@ log_path: !@pathlib.Path /var/log/myapp.log
 
 ### Deep Merging, Dict Patching and List Extension
 ```yaml
-_includes:
+include!:
   - base.yaml
 
 users:

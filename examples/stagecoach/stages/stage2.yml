@@ -1,4 +1,4 @@
-_includes:
+include!:
   - [stage.yml, stagecoach]
   # - [training.yml, yamlotorch]
   # - [adam.yml, yamlotorch]

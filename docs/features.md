@@ -2,8 +2,8 @@
 
 PYAMLO enhances standard YAML loading with several powerful features designed to handle complex configurations.
 
-## Includes (`_includes`)
-- Structure your configuration across multiple files using the `_includes` key.
+## Includes (`include!`)
+- Structure your configuration across multiple files using the `include!` key.
 - Files are deep-merged in order, with later files overriding earlier ones.
 
 ## Merging Strategies

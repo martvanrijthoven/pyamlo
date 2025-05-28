@@ -12,7 +12,7 @@ PYAMLO is a  YAML configuration loader for Python, designed for advanced configu
 
 ## Why PYAMLO?
 
-- **Composable configs**: Use `_includes` to merge multiple YAML files.
+- **Composable configs**: Use `include!` to merge multiple YAML files.
 - **Powerful merging**: Deep merge, extend lists, or patch dicts.
 - **Environment aware**: Inject environment variables and use defaults.
 - **Python objects**: Instantiate classes/functions directly from YAML

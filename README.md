@@ -10,7 +10,7 @@
 
 ## Features
 
-- **Includes:** Merge multiple YAML files using `_includes`.
+- **Includes:** Merge multiple YAML files using `include!`.
 - **Merging:** Deep merge dictionaries, extend lists (`!extend`), and patch/replace dictionaries (`!patch`).
 - **Environment Variables:** Substitute values using `!env VAR_NAME` or `!env {var: NAME, default: ...}`.
 - **Variable Interpolation:** Reference other configuration values using `${path.to.value}` syntax.
@@ -20,7 +20,7 @@
 ## Example
 
 ```yaml
-_includes:
+include!:
   - examples/base.yml
   - examples/override.yml
 

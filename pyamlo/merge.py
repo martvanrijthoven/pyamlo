@@ -12,7 +12,7 @@ class MergeError(Exception):
 
 
 class IncludeError(Exception):
-    """Problems during _includes processing."""
+    """Problems during include! processing."""
 
 
 def deep_merge(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
@@ -50,7 +50,7 @@ def load_raw(path: str) -> dict[str, Any]:
 
 
 def process_includes(raw: dict[str, Any]) -> dict[str, Any]:
-    incs = raw.pop("_includes", [])
+    incs = raw.pop('include!', [])
     merged: dict[str, Any] = {}
     for entry in incs:
         part = _load_include(entry)

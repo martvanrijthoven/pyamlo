@@ -10,11 +10,11 @@ from pyamlo.merge import IncludeError, _load_include, _load_pkg_include, load_ra
 from pyamlo.tags import ConfigLoader, construct_include
 
 
-def test_includes_and_merging(tmp_path):
+def test_include_and_merging(tmp_path):
     config_path = tmp_path / "main.yaml"
     config_path.write_text(
         """
-            _includes:
+            include!:
             - base.yaml
             - override.yaml
         """
