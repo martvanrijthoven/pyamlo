@@ -500,6 +500,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#programmatic-vs-command-line-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Programmatic vs Command Line Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#namespace-your-arguments" class="md-nav__link">
     <span class="md-ellipsis">
       Namespace Your Arguments
@@ -585,35 +594,59 @@
 </span></code></pre></div></li>
 </ul>
 <h2 id="cli-overrides-best-practices">CLI Overrides Best Practices<a class="headerlink" href="#cli-overrides-best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="programmatic-vs-command-line-usage">Programmatic vs Command Line Usage<a class="headerlink" href="#programmatic-vs-command-line-usage" title="Permanent link">&para;</a></h3>
+<p>PYAMLO supports overrides in two ways:</p>
+<p><strong>Programmatic overrides</strong> (via <code>overrides</code> parameter):
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyamlo</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_config</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Manual overrides for specific values</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;config.yml&quot;</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="p">[</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="s2">&quot;pyamlo.app.debug=true&quot;</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="s2">&quot;pyamlo.database.host=localhost&quot;</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">])</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Automatic CLI reading</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">config</span> <span class="o">=</span> <span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;config.yml&quot;</span><span class="p">,</span> <span class="n">use_cli</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Combined approach</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">config</span> <span class="o">=</span> <span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;config.yml&quot;</span><span class="p">,</span> 
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="n">overrides</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;pyamlo.app.name=MyApp&quot;</span><span class="p">],</span>  <span class="c1"># Always applied</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="n">use_cli</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Read additional overrides from command line</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>Command line usage</strong>:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>python<span class="w"> </span>-m<span class="w"> </span>pyamlo<span class="w"> </span>config.yml<span class="w"> </span>pyamlo.app.debug<span class="o">=</span><span class="nb">true</span><span class="w"> </span>pyamlo.database.host<span class="o">=</span>localhost
+</span></code></pre></div></p>
 <h3 id="namespace-your-arguments">Namespace Your Arguments<a class="headerlink" href="#namespace-your-arguments" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Always use the <code>pyamlo.</code> prefix for PYAMLO config overrides</li>
 <li>This avoids conflicts with other CLI arguments
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Good</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>python<span class="w"> </span>script.py<span class="w"> </span>pyamlo.app.name<span class="o">=</span>MyApp<span class="w"> </span>--verbose
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Bad - no pyamlo prefix, will be ignored</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>python<span class="w"> </span>script.py<span class="w"> </span>app.name<span class="o">=</span>MyApp<span class="w"> </span>--verbose
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Good</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>python<span class="w"> </span>script.py<span class="w"> </span>pyamlo.app.name<span class="o">=</span>MyApp<span class="w"> </span>--verbose
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Bad - no pyamlo prefix, will be ignored</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>python<span class="w"> </span>script.py<span class="w"> </span>app.name<span class="o">=</span>MyApp<span class="w"> </span>--verbose
 </span></code></pre></div></li>
 </ul>
 <h3 id="use-proper-yaml-syntax-in-values">Use Proper YAML Syntax in Values<a class="headerlink" href="#use-proper-yaml-syntax-in-values" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Use single quotes for values containing spaces or special characters</li>
 <li>Use valid YAML for !extend and !patch values
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Good</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>python<span class="w"> </span>script.py<span class="w"> </span><span class="s1">&#39;pyamlo.items=!extend [4,5]&#39;</span><span class="w"> </span><span class="s1">&#39;pyamlo.settings=!patch {&quot;debug&quot;: true}&#39;</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Bad - invalid YAML syntax</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>python<span class="w"> </span>script.py<span class="w"> </span>pyamlo.items<span class="o">=</span>!extend<span class="o">[</span><span class="m">4</span>,5<span class="o">]</span><span class="w"> </span>pyamlo.settings<span class="o">=</span>!patch<span class="o">{</span>debug:true<span class="o">}</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Good</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>python<span class="w"> </span>script.py<span class="w"> </span><span class="s1">&#39;pyamlo.items=!extend [4,5]&#39;</span><span class="w"> </span><span class="s1">&#39;pyamlo.settings=!patch {&quot;debug&quot;: true}&#39;</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Bad - invalid YAML syntax</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>python<span class="w"> </span>script.py<span class="w"> </span>pyamlo.items<span class="o">=</span>!extend<span class="o">[</span><span class="m">4</span>,5<span class="o">]</span><span class="w"> </span>pyamlo.settings<span class="o">=</span>!patch<span class="o">{</span>debug:true<span class="o">}</span>
 </span></code></pre></div></li>
 </ul>
 <h3 id="order-of-precedence">Order of Precedence<a class="headerlink" href="#order-of-precedence" title="Permanent link">&para;</a></h3>
 <ol>
 <li>Included file values (!include)</li>
 <li>Config file values (loaded from YAML files)</li>
-<li>CLI overrides (pyamlo.*)</li>
+<li>Manual overrides (provided via <code>overrides</code> parameter)</li>
+<li>CLI overrides (when <code>use_cli=True</code>, read from sys.argv)</li>
 </ol>
-<p>This means CLI overrides always take precedence over file-based configuration.</p>
+<p>When both manual overrides and CLI overrides are used together, they are combined with manual overrides processed first, then CLI overrides applied on top.</p>
 
 
 
@@ -636,7 +669,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 30, 2025 11:46:21 UTC">May 30, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 30, 2025 13:02:21 UTC">May 30, 2025</span>
   </span>
 
     
