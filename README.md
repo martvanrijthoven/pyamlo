@@ -36,18 +36,14 @@ paths:
   base: !@pathlib.Path /opt/${app.name}
   data: !@pathlib.Path
     - ${paths.base}
-    - data
+    - data.yml
 
-services:
-  main: !@pyamlo.SystemInfo
-  secondary: !@pyamlo.SystemInfo
 
 hostdefault: !@pyamlo.call "${services.main.as_dict}" 
 
-pipeline:
-  composite:
-    first: ${services.main.host}
-    second: ${services.secondary}
+info:
+  base_path: ${paths.base}
+  data_name: ${paths.data.name}
 
 logs:
   - !@pathlib.Path /logs/${app.name}/main.log
@@ -66,85 +62,11 @@ pip install pyamlo
 ```python
 from pyamlo import load_config
 
-# Single config file
 config = load_config("examples/test_config.yaml")
 print(config)
 
-# Multiple config files (later files override earlier ones)
-config = load_config(["base.yaml", "override.yaml", "local.yaml"])
 ```
-
-### Programmatic CLI Integration
-PYAMLO provides three ways to integrate CLI functionality into your scripts:
-
-```python
-from pyamlo import load_config
-
-# 1. Explicit overrides (recommended for scripts)
-config = load_config("config.yaml", overrides=["pyamlo.debug=true", "pyamlo.app.name=MyApp"])
-
-# 2. Automatic CLI reading from sys.argv (simple integration)
-config = load_config("config.yaml", use_cli=True)
-
-# 3. Combined approach - manual overrides + CLI
-config = load_config("config.yaml", 
-    overrides=["pyamlo.app.name=MyApp"],  # Always applied
-    use_cli=True  # Also read from sys.argv
-)
-```
-
-**Pattern 1 (Explicit overrides)** is recommended when you want full control over which override values to apply. This is ideal for scripts that may have their own argument parsing.
-
-**Pattern 2 (use_cli=True)** automatically reads override arguments from `sys.argv`, making it perfect for simple scripts that want CLI functionality without additional setup.
-
-**Pattern 3 (Combined)** allows you to set baseline overrides while still accepting additional CLI overrides, providing maximum flexibility.
-
-### Command Line Interface
-```bash
-# Single config file
-python -m pyamlo config.yaml
-
-# Multiple config files with CLI overrides
-python -m pyamlo base.yaml override.yaml pyamlo.app.name=MyApp pyamlo.debug=true
-```
-
-### Order of Operations
-PYAMLO processes configuration in the following order:
-1. **For each config file**: Load and process `!include` directives (relative to that file's location)
-2. **Merge multiple configs**: Later files override earlier ones using deep merge
-3. **Apply CLI overrides**: Override specific values from command line
-4. **Resolve variables and instantiate objects**: Process `${...}` interpolation and `!@` tags
-
-## Quick Examples
-
-### Multiple Config Files
-```python
-from pyamlo import load_config
-
-# Load and merge multiple configs
-config = load_config(['base.yaml', 'environment.yaml', 'local.yaml'])
-
-# Each file processes includes independently, then they're merged
-# Later files override earlier ones
-```
-
-### Command Line Usage
-```bash
-# Single config with overrides
-python -m pyamlo config.yaml pyamlo.app.name=MyApp pyamlo.debug=true
-
-# Multiple configs with overrides
-python -m pyamlo base.yaml override.yaml pyamlo.database.host=localhost
-
-# Override nested values
-python -m pyamlo config.yaml pyamlo.database.connection.timeout=30
-
-# Extend lists
-python -m pyamlo config.yaml 'pyamlo.items=!extend [4,5]'
-
-# Patch dictionaries  
-python -m pyamlo config.yaml 'pyamlo.settings=!patch {"debug": true}'
-```
+See for more details on the [examples documentation](https://pyamlo.readthedocs.io/en/latest/usage.html).
 
 ## Development
 - **installation:**  
