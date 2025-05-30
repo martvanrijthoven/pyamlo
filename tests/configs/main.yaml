@@ -1,0 +1,4 @@
+# Main configuration file for testing includes and merging
+include!:
+  - base.yaml
+  - override.yaml

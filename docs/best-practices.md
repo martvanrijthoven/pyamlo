@@ -24,4 +24,33 @@
       assert "app" in cfg
   ```
 
----
+## CLI Overrides Best Practices
+
+### Namespace Your Arguments
+- Always use the `pyamlo.` prefix for PYAMLO config overrides
+- This avoids conflicts with other CLI arguments
+```bash
+# Good
+python script.py pyamlo.app.name=MyApp --verbose
+
+# Bad - no pyamlo prefix, will be ignored
+python script.py app.name=MyApp --verbose
+```
+
+### Use Proper YAML Syntax in Values
+- Use single quotes for values containing spaces or special characters
+- Use valid YAML for !extend and !patch values
+```bash
+# Good
+python script.py 'pyamlo.items=!extend [4,5]' 'pyamlo.settings=!patch {"debug": true}'
+
+# Bad - invalid YAML syntax
+python script.py pyamlo.items=!extend[4,5] pyamlo.settings=!patch{debug:true}
+```
+
+### Order of Precedence
+1. Included file values (!include)
+2. Config file values (loaded from YAML files)
+3. CLI overrides (pyamlo.*)
+
+This means CLI overrides always take precedence over file-based configuration.

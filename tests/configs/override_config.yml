@@ -1,0 +1,12 @@
+common:
+  log_dir: custom_logs
+
+model:
+  params:
+    pretrained: false
+    batch_size: 32
+
+training:
+  epochs: 100
+  optimizer: adam
+  lr: 0.001

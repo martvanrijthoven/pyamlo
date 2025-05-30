@@ -60,11 +60,74 @@ pip install pyamlo
 
 ## Usage
 
+### Basic Usage
 ```python
 from pyamlo import load_config
 
+# Single config file
 config = load_config("examples/test_config.yaml")
 print(config)
+
+# Multiple config files (later files override earlier ones)
+config = load_config(["base.yaml", "override.yaml", "local.yaml"])
+```
+
+### Command Line Interface
+```bash
+# Single config file
+python -m pyamlo config.yaml
+
+# Multiple config files with CLI overrides
+python -m pyamlo base.yaml override.yaml pyamlo.app.name=MyApp pyamlo.debug=true
+```
+
+### Order of Operations
+PYAMLO processes configuration in the following order:
+1. **For each config file**: Load and process `!include` directives (relative to that file's location)
+2. **Merge multiple configs**: Later files override earlier ones using deep merge
+3. **Apply CLI overrides**: Override specific values from command line
+4. **Resolve variables and instantiate objects**: Process `${...}` interpolation and `!@` tags
+
+## Quick Examples
+
+### Multiple Config Files
+```python
+from pyamlo import load_config
+
+# Load and merge multiple configs
+config = load_config(['base.yaml', 'environment.yaml', 'local.yaml'])
+
+# Each file processes includes independently, then they're merged
+# Later files override earlier ones
+```
+
+### CLI Overrides
+```python
+from pyamlo import load_config
+
+# Load with CLI overrides
+config = load_config('config.yaml', cli_overrides=[
+    'pyamlo.app.name=MyApp',
+    'pyamlo.debug=true'
+])
+```
+
+### Command Line Usage
+```bash
+# Single config with overrides
+python -m pyamlo config.yaml pyamlo.app.name=MyApp pyamlo.debug=true
+
+# Multiple configs with overrides
+python -m pyamlo base.yaml override.yaml pyamlo.database.host=localhost
+
+# Override nested values
+python -m pyamlo config.yaml pyamlo.database.connection.timeout=30
+
+# Extend lists
+python -m pyamlo config.yaml 'pyamlo.items=!extend [4,5]'
+
+# Patch dictionaries  
+python -m pyamlo config.yaml 'pyamlo.settings=!patch {"debug": true}'
 ```
 
 ## Development

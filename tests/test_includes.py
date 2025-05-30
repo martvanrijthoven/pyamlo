@@ -1,7 +1,5 @@
-import os
-from pathlib import Path
-
 import pytest
+from pathlib import Path
 from yaml import MappingNode, ScalarNode
 from yaml.constructor import ConstructorError
 
@@ -10,21 +8,11 @@ from pyamlo.merge import IncludeError, _load_include, _load_pkg_include, load_ra
 from pyamlo.tags import ConfigLoader, construct_include
 
 
-def test_include_and_merging(tmp_path):
-    config_path = tmp_path / "main.yaml"
-    config_path.write_text(
-        """
-            include!:
-            - base.yaml
-            - override.yaml
-        """
-    )
-    for name in ("base.yaml", "override.yaml"):
-        src = Path(__file__).parent / "configs" / name
-        (tmp_path / name).write_text(src.read_text())
-    os.chdir(tmp_path)
-    with open(config_path, "r") as f:
-        config = load_config(f)
+def test_include_and_merging():
+    """Test that includes work correctly with merging."""
+    config_path = Path(__file__).parent / "configs" / "main.yaml"
+    config = load_config(config_path)
+    
     assert config["app"]["name"] == "BaseApp"
     assert config["app"]["version"] == "2.0"
     assert config["list"] == [1, 2, 3, 4, 5]

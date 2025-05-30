@@ -1,4 +1,5 @@
 import importlib
+import os
 import re
 from functools import singledispatchmethod
 from inspect import Parameter, signature
@@ -26,8 +27,10 @@ class Resolver:
     @resolve.register
     def _(self, node: IncludeSpec, path: str = "") -> Any:
         fn = self.VAR_RE.sub(lambda m: str(self._get(m.group(1))), node.path)
+        if hasattr(node, "_base_path") and node._base_path and not os.path.isabs(fn):
+            fn = os.path.join(os.path.dirname(node._base_path), fn)
         raw = load_raw(fn)
-        merged = process_includes(raw)
+        merged = process_includes(raw, fn)
         return self.resolve(merged)
 
     @resolve.register

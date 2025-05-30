@@ -30,8 +30,6 @@ def test_resolve_mapping_interpolation():
     resolver = Resolver()
     resolver.instances["var1"] = "world"
     resolver.instances["map1"] = {"nested": "hello"}
-
-    # Test dictionary access in interpolation
     assert resolver.resolve("${map1.nested} ${var1}") == "hello world"
 
 

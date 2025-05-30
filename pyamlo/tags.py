@@ -42,6 +42,10 @@ class CallSpec:
 class IncludeSpec:
     def __init__(self, path: str):
         self.path = path
+        self._base_path: Optional[str] = None
+
+    def set_base_path(self, base_path: str) -> None:
+        self._base_path = base_path
 
 
 class ImportSpec:

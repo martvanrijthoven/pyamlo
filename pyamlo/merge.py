@@ -49,11 +49,13 @@ def load_raw(path: str) -> dict[str, Any]:
         raise IncludeError(f"Error loading include file '{path}': {e}") from e
 
 
-def process_includes(raw: dict[str, Any]) -> dict[str, Any]:
-    incs = raw.pop('include!', [])
+def process_includes(
+    raw: dict[str, Any], base_path: str | None = None
+) -> dict[str, Any]:
+    incs = raw.pop("include!", [])
     merged: dict[str, Any] = {}
     for entry in incs:
-        part = _load_include(entry)
+        part = _load_include(entry, base_path)
         deep_merge(merged, part)
     return deep_merge(merged, raw)
 
@@ -77,8 +79,10 @@ def _load_pkg_include(fn: str, prefix: str) -> dict[str, Any]:
     return {prefix: load_raw(cfg_path)}
 
 
-def _load_include(entry: Any) -> dict[str, Any]:
+def _load_include(entry: Any, base_path: str | None = None) -> dict[str, Any]:
     if isinstance(entry, str):
+        if base_path is not None and not os.path.isabs(entry):
+            entry = os.path.join(os.path.dirname(base_path), entry)
         return load_raw(entry)
     if _is_pkg_include(entry):
         fn, prefix = entry  # type: ignore

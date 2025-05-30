@@ -1,0 +1,11 @@
+# Base configuration file for testing multiple config loading
+common:
+  name: test-app
+  log_dir: logs
+  include_test: !include includes.yml
+
+model:
+  type: resnet
+  params:
+    layers: 50
+    pretrained: true
