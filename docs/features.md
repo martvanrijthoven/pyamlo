@@ -53,6 +53,28 @@ python -m pyamlo base.yml production.yml pyamlo.debug=true pyamlo.database.pool_
 python -m pyamlo config.yml 'pyamlo.items=!extend [4,5]' 'pyamlo.settings=!patch {"debug": true}'
 ```
 
+You can also use overrides programmatically with the `load_config` function:
+
+```python
+from pyamlo import load_config
+
+# Manual overrides only
+config = load_config(
+    "config.yml", 
+    overrides=["pyamlo.app.name=MyApp", "pyamlo.debug=true"]
+)
+
+# Automatically read CLI overrides from sys.argv
+config = load_config("config.yml", use_cli=True)
+
+# Combine manual overrides with CLI overrides
+config = load_config(
+    "config.yml", 
+    overrides=["pyamlo.app.name=MyApp"],  # Manual overrides
+    use_cli=True  # Also read from sys.argv
+)
+```
+
 ### Order of Operations
 1. **Include Processing**: Each config file processes its own `!include` directives
 2. **Config Merging**: Multiple config files are merged in order (left to right)

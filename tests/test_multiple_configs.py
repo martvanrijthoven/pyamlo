@@ -20,7 +20,7 @@ def test_multiple_config_loading():
 def test_multiple_config_cli_overrides():
     config = load_config(
         [CONFIGS_DIR / "base_config.yml", CONFIGS_DIR / "override_config.yml"],
-        cli_overrides=["pyamlo.common.log_dir=cli_logs", "pyamlo.model.params.layers=101"]
+        overrides=["pyamlo.common.log_dir=cli_logs", "pyamlo.model.params.layers=101"]
     )
     
     assert config["common"]["log_dir"] == "cli_logs"

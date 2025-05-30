@@ -26,6 +26,35 @@
 
 ## CLI Overrides Best Practices
 
+### Programmatic vs Command Line Usage
+
+PYAMLO supports overrides in two ways:
+
+**Programmatic overrides** (via `overrides` parameter):
+```python
+from pyamlo import load_config
+
+# Manual overrides for specific values
+config = load_config("config.yml", overrides=[
+    "pyamlo.app.debug=true",
+    "pyamlo.database.host=localhost"
+])
+
+# Automatic CLI reading
+config = load_config("config.yml", use_cli=True)
+
+# Combined approach
+config = load_config("config.yml", 
+    overrides=["pyamlo.app.name=MyApp"],  # Always applied
+    use_cli=True  # Read additional overrides from command line
+)
+```
+
+**Command line usage**:
+```bash
+python -m pyamlo config.yml pyamlo.app.debug=true pyamlo.database.host=localhost
+```
+
 ### Namespace Your Arguments
 - Always use the `pyamlo.` prefix for PYAMLO config overrides
 - This avoids conflicts with other CLI arguments
@@ -51,6 +80,7 @@ python script.py pyamlo.items=!extend[4,5] pyamlo.settings=!patch{debug:true}
 ### Order of Precedence
 1. Included file values (!include)
 2. Config file values (loaded from YAML files)
-3. CLI overrides (pyamlo.*)
+3. Manual overrides (provided via `overrides` parameter)
+4. CLI overrides (when `use_cli=True`, read from sys.argv)
 
-This means CLI overrides always take precedence over file-based configuration.
+When both manual overrides and CLI overrides are used together, they are combined with manual overrides processed first, then CLI overrides applied on top.

@@ -39,7 +39,7 @@ def _load_yaml(source: Union[str, Path, IO[str]]) -> dict[str, Any]:
 
 def load_config(
     source: Union[str, Path, IO[str], Sequence[Union[str, Path, IO[str]]]],
-    cli_overrides: Optional[list[str]] = None,
+    overrides: Optional[list[str]] = None,
     use_cli: bool = False,
 ) -> dict:
     """Parse YAML from one or more config sources, applying includes, merges, tags, and
@@ -50,7 +50,7 @@ def load_config(
        - Load the YAML content
        - Process include (relative to file's location)
     2. Merge config files in order (later files override earlier ones)
-    3. Apply CLI overrides if any
+    3. Apply overrides (manual and/or CLI) if any
     4. Resolve variables and instantiate objects
 
     Args:
@@ -58,9 +58,10 @@ def load_config(
             - A path to a YAML file (as string or Path)
             - A file-like object containing YAML
             - A sequence of the above (files are merged in order)
-        cli_overrides: Optional list of override strings in format ["key=value", "key.nested=value"]
+        overrides: Optional list of override strings in format ["key=value", "key.nested=value"]
             Values can use YAML tags like !extend [4,5] or !patch {"debug": true}
-        use_cli: If True, automatically reads CLI overrides from sys.argv
+        use_cli: If True, automatically reads CLI overrides from sys.argv and merges them
+            with any manually provided overrides
 
     Returns:
         The resolved configuration dictionary
@@ -72,10 +73,13 @@ def load_config(
         else source
     )
 
-    # Read CLI overrides from sys.argv if requested
-    if use_cli and not cli_overrides:
+    # Collect all overrides (manual + CLI if requested)
+    all_overrides = list(overrides) if overrides else []
+    
+    if use_cli:
         import sys
         cli_overrides = [arg for arg in sys.argv[1:] if arg.startswith("pyamlo.") and "=" in arg]
+        all_overrides.extend(cli_overrides)
 
     config: dict[str, Any] = {}
     for src in sources:
@@ -90,8 +94,8 @@ def load_config(
             processed = process_includes(raw, src_path)
             config = deep_merge(config, processed)
 
-    if cli_overrides:
-        config = process_cli(config, cli_overrides)
+    if all_overrides:
+        config = process_cli(config, all_overrides)
 
     return Resolver().resolve(config)
 

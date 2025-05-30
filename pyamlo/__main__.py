@@ -17,7 +17,7 @@ def main():
             raise ValueError("At least one config file must be provided")
         
         # Load config with CLI overrides
-        config = load_config(config_files, cli_overrides=override_args)
+        config = load_config(config_files, overrides=override_args)
         pprint(config)
         return 0
     except ValueError as e:

@@ -80,21 +80,24 @@ PYAMLO provides three ways to integrate CLI functionality into your scripts:
 ```python
 from pyamlo import load_config
 
-# 1. Explicit CLI overrides (recommended for scripts)
-config = load_config("config.yaml", cli_overrides=["pyamlo.debug=true", "pyamlo.app.name=MyApp"])
+# 1. Explicit overrides (recommended for scripts)
+config = load_config("config.yaml", overrides=["pyamlo.debug=true", "pyamlo.app.name=MyApp"])
 
 # 2. Automatic CLI reading from sys.argv (simple integration)
 config = load_config("config.yaml", use_cli=True)
 
-# 3. Traditional CLI processing (unchanged)
-# python -m pyamlo config.yaml pyamlo.debug=true
+# 3. Combined approach - manual overrides + CLI
+config = load_config("config.yaml", 
+    overrides=["pyamlo.app.name=MyApp"],  # Always applied
+    use_cli=True  # Also read from sys.argv
+)
 ```
 
-**Pattern 1 (Explicit overrides)** is recommended when you want full control over which CLI arguments to apply. This is ideal for scripts that may have their own argument parsing.
+**Pattern 1 (Explicit overrides)** is recommended when you want full control over which override values to apply. This is ideal for scripts that may have their own argument parsing.
 
 **Pattern 2 (use_cli=True)** automatically reads override arguments from `sys.argv`, making it perfect for simple scripts that want CLI functionality without additional setup.
 
-**Pattern 3 (Traditional CLI)** continues to work as before for direct command-line usage.
+**Pattern 3 (Combined)** allows you to set baseline overrides while still accepting additional CLI overrides, providing maximum flexibility.
 
 ### Command Line Interface
 ```bash

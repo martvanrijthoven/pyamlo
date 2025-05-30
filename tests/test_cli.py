@@ -42,19 +42,19 @@ settings:
     
     config = load_config(
         StringIO(yaml_content), 
-        cli_overrides=["pyamlo.app.name=TestApp"]
+        overrides=["pyamlo.app.name=TestApp"]
     )
     assert config["app"]["name"] == "TestApp"
     
     config = load_config(
         StringIO(yaml_content), 
-        cli_overrides=["pyamlo.items=!extend [4,5]"]
+        overrides=["pyamlo.items=!extend [4,5]"]
     )
     assert config["items"] == [1, 2, 3, 4, 5]
     
     config = load_config(
         StringIO(yaml_content), 
-        cli_overrides=['pyamlo.settings=!patch {"debug": true, "options": {"b": 2}}']
+        overrides=['pyamlo.settings=!patch {"debug": true, "options": {"b": 2}}']
     )
     assert config["settings"]["debug"] is True
     assert config["settings"]["options"] == {"b": 2}
@@ -85,7 +85,7 @@ debug: false
     """
     config = load_config(
         StringIO(yaml_content),
-        cli_overrides=["pyamlo.debug=true", "pyamlo.app.name=OverrideApp"]
+        overrides=["pyamlo.debug=true", "pyamlo.app.name=OverrideApp"]
     )
     assert config["debug"] is True
     assert config["app"]["name"] == "OverrideApp"
@@ -108,7 +108,7 @@ app:
     ]
     monkeypatch.setattr(sys, "argv", test_args)
     pyamlo_args = [arg for arg in sys.argv[1:] if arg.startswith("pyamlo.")]
-    config = load_config(StringIO(yaml_content), cli_overrides=pyamlo_args)
+    config = load_config(StringIO(yaml_content), overrides=pyamlo_args)
     assert config["app"]["name"] == "TestApp"
     assert config["app"]["debug"] is True
 
@@ -130,7 +130,7 @@ settings:
     monkeypatch.setattr(sys, "argv", test_args)
     
     pyamlo_args = [arg for arg in sys.argv[1:] if arg.startswith("pyamlo.")]
-    config = load_config(StringIO(yaml_content), cli_overrides=pyamlo_args)
+    config = load_config(StringIO(yaml_content), overrides=pyamlo_args)
     assert config["items"] == [1, 2, 3, 4, 5]
     assert config["settings"]["debug"] is True
     assert config["settings"]["options"] == {"timeout": 30}
@@ -152,7 +152,7 @@ settings:
     monkeypatch.setattr(sys, "argv", test_args)
     
     pyamlo_args = [arg for arg in sys.argv[1:] if arg.startswith("pyamlo.")]
-    config = load_config(StringIO(yaml_content), cli_overrides=pyamlo_args)
+    config = load_config(StringIO(yaml_content), overrides=pyamlo_args)
     assert config["message"] == "Hello World!"
     assert config["settings"]["path"] == "/path/with spaces/test"
 
@@ -180,22 +180,26 @@ app:
 
 
 def test_use_cli_with_explicit_overrides(monkeypatch):
-    """Test that explicit cli_overrides take precedence over use_cli."""
+    """Test that manual overrides and CLI overrides work together, with manual taking precedence when they conflict."""
     yaml_content = """
 app:
   name: BaseApp
+  version: 1.0
     """
     
-    test_args = ["script.py", "pyamlo.app.name=FromSysArgv"]
+    test_args = ["script.py", "pyamlo.app.version=2.0", "pyamlo.app.debug=true"]
     monkeypatch.setattr(sys, "argv", test_args)
     
     config = load_config(
         StringIO(yaml_content), 
-        cli_overrides=["pyamlo.app.name=FromExplicit"],
+        overrides=["pyamlo.app.name=FromExplicit"],
         use_cli=True
     )
     
-    assert config["app"]["name"] == "FromExplicit"
+    # Manual override takes precedence for name, CLI provides version and debug
+    assert config["app"]["name"] == "FromExplicit"  # from manual overrides (first)
+    assert config["app"]["version"] == 2.0  # from CLI (parsed as float)
+    assert config["app"]["debug"] is True  # from CLI
 
 
 def test_use_cli_false_ignores_argv(monkeypatch):
@@ -226,7 +230,7 @@ app:
     
     config = load_config(
         StringIO(yaml_content),
-        cli_overrides=["pyamlo.app.debug=true", "pyamlo.database.host=production-db"]
+        overrides=["pyamlo.app.debug=true", "pyamlo.database.host=production-db"]
     )
     
     assert config["app"]["debug"] is True
