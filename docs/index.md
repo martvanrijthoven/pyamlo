@@ -52,23 +52,4 @@ print(config['greeting'])  # Hello, MyWebApp!
 print(config['database_url'])  # postgres://web.local:8080/maindb
 ```
 
-You can also use overrides to modify configuration values:
-
-```python
-# Manual overrides
-config = load_config("config.yaml", overrides=["pyamlo.app.port=9000"])
-
-# Automatic CLI overrides from sys.argv
-config = load_config("config.yaml", use_cli=True)
-
-# Combine both
-config = load_config(
-    "config.yaml", 
-    overrides=["pyamlo.app.name=NewApp"],
-    use_cli=True
-)
-```
-
-
-
 ---

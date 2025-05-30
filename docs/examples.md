@@ -89,36 +89,23 @@ pipeline:
     inputs: ${pipeline.train.outputs}
 ```
 
-## CLI Usage
+## Overrides
 
-### Basic Config
-```yaml
-# base.yml
-app:
-  name: MyApp
-  debug: false
-items: [1, 2, 3]
-
-# overrides.yml
-app:
-  debug: true
-items: !extend [4, 5]
-```
-
-```bash
-# Load single config
-python -m pyamlo config.yml
-
-# Load multiple configs (later files override earlier ones)
-python -m pyamlo base.yml overrides.yml
-
-# Override values with CLI args
-python -m pyamlo base.yml overrides.yml pyamlo.app.debug=true
-
-# Extend lists
-python -m pyamlo config.yml 'pyamlo.items=!extend [4,5]'
-
-# Mix with other CLI arguments (others are ignored)
-python -m pyamlo config.yml --verbose pyamlo.app.name=NewApp
+```python
+from pyamlo import load_config
+config = load_config("config.yaml", overrides=[
+    "pyamlo.app.name=NewApp",
+    "pyamlo.database.host=localhost"
 ])
+``` 
+
+## CLI Overrides
+
+````bash
+python -m pyamlo config.yaml pyamlo.app.name=NewApp pyamlo.database.host=localhost
+````
+
+```python
+from pyamlo import load_config
+config = load_config("config.yaml", use_cli=True)
 ```
