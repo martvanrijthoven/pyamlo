@@ -40,13 +40,15 @@ local_scheme = "no-local-version"
 test = [
   "pytest",
   "pytest-cov",
+  "coverage[toml]>=7.0.0",
 ]
 docs = [
   "mkdocs>=1.5.0",
   "mkdocs-material>=9.0.0",
   "mkdocstrings[python]>=0.20.0",
   "mkdocs-git-revision-date-localized-plugin>=1.2.0",
-  "mkdocs-git-committers-plugin"
+  "mkdocs-git-committers-plugin",
+  "coverage[toml]>=7.0.0"
 ]
 dev = [
   "pyamlo[test,docs]",
