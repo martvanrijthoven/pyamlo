@@ -5,6 +5,7 @@
 [![PyPI](https://img.shields.io/pypi/v/pyamlo?color=0&label=pypi%20package)](https://pypi.org/project/pyamlo/)
 [![Tests](https://github.com/martvanrijthoven/pyamlo/actions/workflows/test.yml/badge.svg)](https://github.com/martvanrijthoven/pyamlo/actions/workflows/test.yml)
 [![Codecov](https://codecov.io/gh/martvanrijthoven/pyamlo/branch/main/graph/badge.svg)](https://codecov.io/gh/martvanrijthoven/pyamlo)
+[![docs](https://github.com/martvanrijthoven/pyamlo/actions/workflows/docs.yml/badge.svg)](https://github.com/martvanrijthoven/pyamlo/actions/workflows/docs.yml)
 [![License](https://img.shields.io/github/license/martvanrijthoven/pyamlo)](https://github.com/martvanrijthoven/pyamlo/blob/main/LICENSE)
 
 `PYAMLO` is a  YAML configuration loader for Python, designed for advanced configuration scenarios. It supports file inclusion, deep merging, environment variable injection, variable interpolation, and direct Python object instantiation from YAML and object instance referencing including their properties.
