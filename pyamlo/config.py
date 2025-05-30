@@ -40,6 +40,7 @@ def _load_yaml(source: Union[str, Path, IO[str]]) -> dict[str, Any]:
 def load_config(
     source: Union[str, Path, IO[str], Sequence[Union[str, Path, IO[str]]]],
     cli_overrides: Optional[list[str]] = None,
+    use_cli: bool = False,
 ) -> dict:
     """Parse YAML from one or more config sources, applying includes, merges, tags, and
     variable interpolation.
@@ -59,6 +60,7 @@ def load_config(
             - A sequence of the above (files are merged in order)
         cli_overrides: Optional list of override strings in format ["key=value", "key.nested=value"]
             Values can use YAML tags like !extend [4,5] or !patch {"debug": true}
+        use_cli: If True, automatically reads CLI overrides from sys.argv
 
     Returns:
         The resolved configuration dictionary
@@ -69,6 +71,11 @@ def load_config(
         if not isinstance(source, Sequence) or isinstance(source, (str, Path))
         else source
     )
+
+    # Read CLI overrides from sys.argv if requested
+    if use_cli and not cli_overrides:
+        import sys
+        cli_overrides = [arg for arg in sys.argv[1:] if arg.startswith("pyamlo.") and "=" in arg]
 
     config: dict[str, Any] = {}
     for src in sources:

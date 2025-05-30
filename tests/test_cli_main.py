@@ -83,4 +83,4 @@ def test_cli_no_config_files():
     ], capture_output=True, text=True, cwd=test_dir.parent)
     
     assert result.returncode == 1
-    assert "At least one config file must be specified" in result.stderr
+    assert "At least one config file must be provided" in result.stderr

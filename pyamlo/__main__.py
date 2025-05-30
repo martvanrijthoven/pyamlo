@@ -1,45 +1,35 @@
 """Command line interface for PYAMLO."""
 
-import argparse
 import sys
-from pathlib import Path
+from pprint import pprint
 
 from pyamlo import load_config
-from pprint import pprint
+from pyamlo.cli import parse_args
 
 
 def main():
-    parser = argparse.ArgumentParser(description="PYAMLO: YAML configuration loader")
-    parser.add_argument(
-        "configs",
-        type=Path,
-        nargs="+",
-        help="One or more YAML config files. Later files override earlier ones.",
-    )
-    args, remaining = parser.parse_known_args()
-
-    actual_configs = []
-    override_args = []
-
-    for config_arg in args.configs:
-        config_str = str(config_arg)
-        if config_str.startswith("pyamlo.") and "=" in config_str:
-            override_args.append(config_str)
-        else:
-            actual_configs.append(config_arg)
-
-    overrides = override_args + [arg for arg in remaining if arg.startswith("pyamlo.")]
-
-    if not actual_configs:
-        print("Error: At least one config file must be specified", file=sys.stderr)
-        return 1
-
+    """Main CLI entry point."""
     try:
-        config = load_config(actual_configs, cli_overrides=overrides)
+        # Parse arguments to separate config files from overrides
+        config_files, override_args = parse_args(sys.argv[1:])
+        
+        if not config_files:
+            raise ValueError("At least one config file must be provided")
+        
+        # Load config with CLI overrides
+        config = load_config(config_files, cli_overrides=override_args)
         pprint(config)
         return 0
-    except Exception as e:
+    except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
+        print("\nUsage: python -m pyamlo config.yaml [config2.yaml ...] [pyamlo.key=value ...]")
+        print("\nExamples:")
+        print("  python -m pyamlo config.yaml")
+        print("  python -m pyamlo base.yaml override.yaml pyamlo.debug=true")
+        print("  python -m pyamlo config.yaml pyamlo.app.name=MyApp pyamlo.database.host=localhost")
+        return 1
+    except Exception as e:
+        print(f"Error loading configuration: {e}", file=sys.stderr)
         return 1
 
 
