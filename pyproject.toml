@@ -95,7 +95,7 @@ python = ["3.12"]
 
 [tool.hatch.envs.test.scripts]
 run = "pytest {args:tests}"
-cov = "pytest --cov=pyamlo --cov-report=term-missing --cov-report=html tests/ {args}"
+cov = "pytest --cov=pyamlo --cov-report=xml --cov-report=term tests/"
 
 [tool.hatch.envs.docs]
 dependencies = [
