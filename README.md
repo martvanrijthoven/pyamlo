@@ -1,4 +1,4 @@
-# PYAMLO: YAML Configuration Loader
+# PYAMLO
 
 > ⚠️ **Development Status**: This project is in development. APIs may change without warning.
 
