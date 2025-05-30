@@ -10,24 +10,20 @@ from pyamlo.tags import ExtendSpec, PatchSpec
 
 
 def test_parse_cli_overrides_basic():
-    # Test pyamlo. prefixed arguments
     result = parse_cli_overrides(["pyamlo.app.name=TestApp", "pyamlo.debug=true"])
     assert result["app"]["name"] == "TestApp"
     assert result["debug"] is True
     
-    # Test that non-pyamlo arguments are ignored
     result = parse_cli_overrides(["other.setting=value", "pyamlo.debug=true"])
     assert "other" not in result
     assert result["debug"] is True
 
 
 def test_parse_cli_overrides_with_special_tags():
-    # Test !extend tag
     result = parse_cli_overrides(["pyamlo.items=!extend [4,5]"])
     assert isinstance(result["items"], ExtendSpec)
     assert result["items"].items == [4, 5]
 
-    # Test !patch tag
     result = parse_cli_overrides(["pyamlo.config=!patch {debug: true}"])
     assert isinstance(result["config"], PatchSpec)
     assert result["config"].mapping == {"debug": True}
@@ -44,21 +40,18 @@ settings:
     a: 1
     """
     
-    # Test basic override
     config = load_config(
         StringIO(yaml_content), 
         cli_overrides=["pyamlo.app.name=TestApp"]
     )
     assert config["app"]["name"] == "TestApp"
     
-    # Test extending a list
     config = load_config(
         StringIO(yaml_content), 
         cli_overrides=["pyamlo.items=!extend [4,5]"]
     )
     assert config["items"] == [1, 2, 3, 4, 5]
     
-    # Test patching a dict
     config = load_config(
         StringIO(yaml_content), 
         cli_overrides=['pyamlo.settings=!patch {"debug": true, "options": {"b": 2}}']
@@ -105,8 +98,7 @@ app:
   name: BaseApp
   debug: false
     """
-    
-    # Mock sys.argv
+
     test_args = [
         "script.py",
         "--verbose",
@@ -115,8 +107,6 @@ app:
         "--output=test.log"
     ]
     monkeypatch.setattr(sys, "argv", test_args)
-    
-    # Filter out non-pyamlo arguments before passing to load_config
     pyamlo_args = [arg for arg in sys.argv[1:] if arg.startswith("pyamlo.")]
     config = load_config(StringIO(yaml_content), cli_overrides=pyamlo_args)
     assert config["app"]["name"] == "TestApp"
@@ -131,8 +121,7 @@ settings:
   debug: false
   options: {}
     """
-    
-    # Mock sys.argv with complex arguments
+
     test_args = [
         "script.py",
         "pyamlo.items=!extend [4,5]",
@@ -140,7 +129,6 @@ settings:
     ]
     monkeypatch.setattr(sys, "argv", test_args)
     
-    # Filter out non-pyamlo arguments before passing to load_config
     pyamlo_args = [arg for arg in sys.argv[1:] if arg.startswith("pyamlo.")]
     config = load_config(StringIO(yaml_content), cli_overrides=pyamlo_args)
     assert config["items"] == [1, 2, 3, 4, 5]
@@ -156,7 +144,6 @@ settings:
   path: /default/path
     """
     
-    # Mock sys.argv with quoted values
     test_args = [
         "script.py",
         'pyamlo.message=Hello World!',  # Space in value
@@ -164,16 +151,11 @@ settings:
     ]
     monkeypatch.setattr(sys, "argv", test_args)
     
-    # Filter out non-pyamlo arguments before passing to load_config
     pyamlo_args = [arg for arg in sys.argv[1:] if arg.startswith("pyamlo.")]
     config = load_config(StringIO(yaml_content), cli_overrides=pyamlo_args)
     assert config["message"] == "Hello World!"
     assert config["settings"]["path"] == "/path/with spaces/test"
 
-
-# =============================================================================
-# use_cli Parameter Tests
-# =============================================================================
 
 def test_use_cli_parameter(monkeypatch):
     """Test the use_cli=True parameter reads from sys.argv."""
@@ -183,7 +165,6 @@ app:
   debug: false
     """
     
-    # Mock sys.argv with CLI overrides
     test_args = [
         "script.py",
         "pyamlo.app.name=TestApp",
@@ -191,8 +172,6 @@ app:
         "pyamlo.new_setting=hello"
     ]
     monkeypatch.setattr(sys, "argv", test_args)
-    
-    # Load config with use_cli=True - should automatically read CLI overrides
     config = load_config(StringIO(yaml_content), use_cli=True)
     
     assert config["app"]["name"] == "TestApp"
@@ -207,11 +186,9 @@ app:
   name: BaseApp
     """
     
-    # Mock sys.argv
     test_args = ["script.py", "pyamlo.app.name=FromSysArgv"]
     monkeypatch.setattr(sys, "argv", test_args)
     
-    # Explicit cli_overrides should take precedence
     config = load_config(
         StringIO(yaml_content), 
         cli_overrides=["pyamlo.app.name=FromExplicit"],
@@ -228,11 +205,8 @@ app:
   name: BaseApp
     """
     
-    # Mock sys.argv with overrides
     test_args = ["script.py", "pyamlo.app.name=ShouldBeIgnored"]
     monkeypatch.setattr(sys, "argv", test_args)
-    
-    # use_cli=False should ignore sys.argv
     config = load_config(StringIO(yaml_content), use_cli=False)
     
     assert config["app"]["name"] == "BaseApp"
@@ -250,7 +224,6 @@ app:
   debug: false
     """
     
-    # This is how you'd use it in a script - super simple!
     config = load_config(
         StringIO(yaml_content),
         cli_overrides=["pyamlo.app.debug=true", "pyamlo.database.host=production-db"]
@@ -269,7 +242,6 @@ settings:
   debug: false
     """
     
-    # Mock sys.argv with complex overrides
     test_args = [
         "script.py",
         "pyamlo.items=!extend [4,5]",
