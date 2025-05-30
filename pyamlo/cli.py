@@ -15,26 +15,6 @@ class OverrideError(Exception):
 
 
 def parse_args(args: List[str]) -> Tuple[List[Union[str, Path]], List[str]]:
-    """Parse command line arguments into config files and override arguments.
-
-    Separates config file paths from pyamlo override arguments.
-
-    Args:
-        args: List of command line arguments (e.g., from sys.argv[1:])
-
-    Returns:
-        Tuple of (config_files, override_args)
-
-    Example:
-        >>> files, overrides = parse_args([
-        ...     "base.yml", "override.yml",
-        ...     "pyamlo.debug=true", "pyamlo.app.name=MyApp"
-        ... ])
-        >>> files
-        ['base.yml', 'override.yml']
-        >>> overrides
-        ['pyamlo.debug=true', 'pyamlo.app.name=MyApp']
-    """
     config_files = []
     override_args = []
 
