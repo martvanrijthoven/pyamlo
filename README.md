@@ -102,17 +102,6 @@ config = load_config(['base.yaml', 'environment.yaml', 'local.yaml'])
 # Later files override earlier ones
 ```
 
-### CLI Overrides
-```python
-from pyamlo import load_config
-
-# Load with CLI overrides
-config = load_config('config.yaml', cli_overrides=[
-    'pyamlo.app.name=MyApp',
-    'pyamlo.debug=true'
-])
-```
-
 ### Command Line Usage
 ```bash
 # Single config with overrides
