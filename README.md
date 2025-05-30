@@ -66,7 +66,7 @@ config = load_config("examples/test_config.yaml")
 print(config)
 
 ```
-See for more details on the [examples documentation](https://pyamlo.readthedocs.io/en/latest/usage.html).
+See for more details on the [examples documentation](https://martvanrijthoven.github.io/pyamlo/examples/).
 
 ## Development
 - **installation:**  
