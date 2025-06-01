@@ -9,7 +9,9 @@ class ExpressionError(Exception):
     """Errors specific to expression evaluation."""
 
 
-MATH_OPERATORS = {"+", "-", "*", "/", "//", "%", "**", "(", ")"}
+# fmt: off
+MATH_OPERATORS = {"+", "-", "*", "/", "//", "%", "**", "(", ")", "&", "|", "^", "~", "<<", ">>"}
+# fmt: on
 COMPARISON_OPERATORS = {"==", "!=", "<=", ">=", "<", ">"}
 LOGICAL_OPERATORS = {"and", "or", "not", "if", "else"}
 LOGICAL_PATTERNS = [rf"\b{op}\b" for op in LOGICAL_OPERATORS]

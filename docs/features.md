@@ -99,8 +99,34 @@ database: !@ psycopg2.connect
 connection_string: ${database.host}:${database.port}  # "localhost:5432"
 ```
 
+### Bitwise Operations
+Perform bitwise operations for flags, permissions, and low-level data manipulation:
+```yaml
+permissions:
+  read: 4    # Binary: 100
+  write: 2   # Binary: 010
+  execute: 1 # Binary: 001
+  
+  # Combine permissions using bitwise OR
+  full_access: ${permissions.read | permissions.write | permissions.execute}  # 7
+  
+  # Check if permission is granted using bitwise AND
+  can_read: ${permissions.full_access & permissions.read}  # 4 (truthy)
+  
+  # Remove permission using bitwise AND with NOT
+  no_write: ${permissions.full_access & ~permissions.write}  # 5
+
+flags:
+  debug: 1
+  verbose: 2
+  current: ${flags.debug | flags.verbose}  # 3
+  shift_left: ${flags.debug << 2}          # 4 (multiply by 4)
+  shift_right: ${flags.verbose >> 1}       # 1 (divide by 2)
+```
+
 **Supported Operations:**
 - **Math**: `+`, `-`, `*`, `/`, `//`, `%`, `**`
+- **Bitwise**: `&` (AND), `|` (OR), `^` (XOR), `~` (NOT), `<<` (left shift), `>>` (right shift)
 - **Comparison**: `==`, `!=`, `<`, `<=`, `>`, `>=`, `in`
 - **Logical**: `and`, `or`, `not`
 - **Ternary**: `value_if_true if condition else value_if_false`
