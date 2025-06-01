@@ -36,8 +36,74 @@ config = load_config(['base.yaml', 'production.yaml', 'user-override.yaml'])
 - Instantiate Python classes or call functions directly from YAML.
 - Supports positional, keyword, and scalar arguments.
 
-## Variable Interpolation (`${...}`)
-- Reference other config values, including instantiated objects and their properties.
+## Variable Interpolation & Expressions (`${...}`)
+Reference other config values, perform calculations, and evaluate conditions within your YAML configuration.
+
+### Basic Variable References
+```yaml
+app:
+  name: MyApp
+  version: 1.0
+  title: ${app.name} v${app.version}  # "MyApp v1.0"
+```
+
+### Mathematical Expressions
+Perform calculations using standard Python operators:
+```yaml
+server:
+  workers: 4
+  connections_per_worker: 100
+  max_connections: ${server.workers * server.connections_per_worker}  # 400
+  
+pricing:
+  base_price: 10.0
+  tax_rate: 0.21
+  total: ${pricing.base_price * (1 + pricing.tax_rate)}  # 12.1
+```
+
+### Conditional Expressions
+Use Python-style conditionals for dynamic configuration:
+```yaml
+app:
+  env: production
+  debug: ${app.env == 'development'}  # false
+  
+database:
+  pool_size: ${app.env == 'production' if 50 else 10}  # 50
+  host: ${app.env == 'production' if 'prod.db.com' else 'localhost'}
+  
+features:
+  enable_cache: ${app.env in ['production', 'staging']}
+  log_level: ${'ERROR' if app.env == 'production' else 'DEBUG'}
+```
+
+### Logical Operations
+Combine conditions with `and`, `or`, and `not`:
+```yaml
+app:
+  env: production
+  maintenance_mode: false
+  
+api:
+  enabled: ${app.env == 'production' and not app.maintenance_mode}
+  rate_limiting: ${app.env == 'production' or app.env == 'staging'}
+```
+
+### Object Property Access
+Access properties of instantiated objects:
+```yaml
+database: !@ psycopg2.connect
+  host: localhost
+  port: 5432
+
+connection_string: ${database.host}:${database.port}  # "localhost:5432"
+```
+
+**Supported Operations:**
+- **Math**: `+`, `-`, `*`, `/`, `//`, `%`, `**`
+- **Comparison**: `==`, `!=`, `<`, `<=`, `>`, `>=`, `in`
+- **Logical**: `and`, `or`, `not`
+- **Ternary**: `value_if_true if condition else value_if_false`
 
 ## CLI Overrides
 Override configuration values via command-line arguments using the `pyamlo.` prefix:
