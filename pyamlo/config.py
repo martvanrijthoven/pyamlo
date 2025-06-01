@@ -75,10 +75,13 @@ def load_config(
 
     # Collect all overrides (manual + CLI if requested)
     all_overrides = list(overrides) if overrides else []
-    
+
     if use_cli:
         import sys
-        cli_overrides = [arg for arg in sys.argv[1:] if arg.startswith("pyamlo.") and "=" in arg]
+
+        cli_overrides = [
+            arg for arg in sys.argv[1:] if arg.startswith("pyamlo.") and "=" in arg
+        ]
         all_overrides.extend(cli_overrides)
 
     config: dict[str, Any] = {}

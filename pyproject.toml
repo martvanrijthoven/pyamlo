@@ -94,7 +94,7 @@ pip-args = ["--upgrade", "--pre"]
 python = ["3.12"]
 
 [tool.hatch.envs.test.scripts]
-run = "pytest {args:tests}"
+all = "pytest {args:tests}"
 cov = "pytest --cov=pyamlo --cov-report=xml --cov-report=term tests/"
 
 [tool.hatch.envs.docs]

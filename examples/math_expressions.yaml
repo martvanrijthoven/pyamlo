@@ -1,0 +1,30 @@
+app:
+  name: MyApp
+  workers: 4
+  scaling_factor: 2.5
+  base_port: 8000
+
+# Math expressions in action!
+database:
+  pool_size: ${app.workers * app.scaling_factor}  # 4 * 2.5 = 10
+  timeout: ${app.workers + 5}                     # 4 + 5 = 9
+  
+services:
+  web:
+    port: ${app.base_port + 1}                    # 8000 + 1 = 8001
+    workers: ${app.workers / 2}                   # 4 / 2 = 2.0
+    
+  api:
+    port: ${app.base_port + 2}                    # 8000 + 2 = 8002
+    max_connections: ${app.workers ** 2}          # 4 ** 2 = 16
+    
+memory:
+  per_worker: 512  # MB
+  total: ${memory.per_worker * app.workers}       # 512 * 4 = 2048
+  buffer: ${memory.total // 4}                   # 2048 // 4 = 512
+
+# Complex expressions with proper precedence
+calculations:
+  complex: ${2 + 3 * 4}                          # 2 + 12 = 14 (not 20!)
+  power_first: ${2 ** 3 * 2}                     # 8 * 2 = 16 (not 64!)
+  division_first: ${10 + 15 // 3}                # 10 + 5 = 15

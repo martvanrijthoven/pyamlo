@@ -7,6 +7,6 @@ from .resolve import call
 
 __all__ = [
     "load_config",
-    "SystemInfo", 
+    "SystemInfo",
     "call",
 ]

@@ -1,8 +1,7 @@
 """CLI utilities for PYAMLO configuration overrides."""
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional
 from collections import defaultdict
-from pathlib import Path
 
 import yaml
 
@@ -12,20 +11,6 @@ from pyamlo.tags import ConfigLoader
 
 class OverrideError(Exception):
     """Raised when there's an error processing a CLI override."""
-
-
-def parse_args(args: List[str]) -> Tuple[List[Union[str, Path]], List[str]]:
-    config_files = []
-    override_args = []
-
-    for arg in args:
-        if arg.startswith("pyamlo.") and "=" in arg:
-            override_args.append(arg)
-        elif not arg.startswith("-"):  # Skip flags like --verbose, etc.
-            config_files.append(Path(arg))
-        # Ignore other flags/options that aren't pyamlo overrides or config files
-
-    return config_files, override_args
 
 
 def parse_cli_overrides(overrides: list[str]) -> Dict[str, Any]:

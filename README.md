@@ -16,6 +16,7 @@
 - **Merging:** Deep merge dictionaries, extend lists (`!extend`), and patch/replace dictionaries (`!patch`).
 - **Environment Variables:** Substitute values using `!env VAR_NAME` or `!env {var: NAME, default: ...}`.
 - **Variable Interpolation:** Reference other configuration values using `${path.to.value}` syntax.
+- **Math Expressions:** Perform calculations directly in YAML using `${2 + 3 * 4}`, `${workers * scaling_factor}`, etc.
 - **Object Instantiation:** Create Python objects directly from YAML using `!@module.path.ClassName` or `!@module.path.func`
 - **Instance Referencing:** Use `${instance}` to reference instantiated objects and their properties. Or `${instance.attr}` to reference attributes of instantiated objects.
 
@@ -31,6 +32,13 @@ testenv: !env MY_TEST_VAR
 app:
   name: TestApp
   version: "2.0"
+  workers: 4
+
+# Math expressions with proper operator precedence
+database:
+  pool_size: ${app.workers * 2}           # 4 * 2 = 8
+  timeout: ${app.workers + 5}             # 4 + 5 = 9
+  max_connections: ${2 ** app.workers}    # 2^4 = 16
 
 paths:
   base: !@pathlib.Path /opt/${app.name}
@@ -38,6 +46,10 @@ paths:
     - ${paths.base}
     - data.yml
 
+# Complex expressions work too!
+calculations:
+  complex: ${10 + app.workers * 2}        # 10 + 8 = 18 (not 28!)
+  division: ${100 // app.workers}         # 100 // 4 = 25
 
 hostdefault: !@pyamlo.call "${services.main.as_dict}" 
 

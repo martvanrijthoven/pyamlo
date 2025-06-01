@@ -5,6 +5,7 @@ from functools import singledispatchmethod
 from inspect import Parameter, signature
 from typing import Any
 
+from pyamlo.expressions import ExpressionEvaluator, is_expression
 from pyamlo.merge import load_raw, process_includes
 from pyamlo.tags import CallSpec, ImportSpec, IncludeSpec, ResolutionError
 
@@ -15,6 +16,7 @@ class Resolver:
     def __init__(self) -> None:
         self.ctx: dict[str, Any] = {}
         self.instances: dict[str, Any] = {}
+        self._expression_evaluator = ExpressionEvaluator(self._get)
 
     @singledispatchmethod
     def resolve(self, node: Any, path: str = "") -> Any:
@@ -61,8 +63,19 @@ class Resolver:
     @resolve.register
     def _(self, node: str, path: str = "") -> Any:
         if m := self.VAR_RE.fullmatch(node):
-            return self._get(m.group(1))
-        return self.VAR_RE.sub(lambda m: str(self._get(m.group(1))), node)
+            expression = m.group(1)
+            if is_expression(expression):
+                return self._expression_evaluator.evaluate(expression)
+            else:
+                return self._get(expression)
+        return self.VAR_RE.sub(lambda m: self._resolve_interpolation(m.group(1)), node)
+
+    def _resolve_interpolation(self, expression: str) -> str:
+        """Resolve a single interpolation expression to string."""
+        if is_expression(expression):
+            return str(self._expression_evaluator.evaluate(expression))
+        else:
+            return str(self._get(expression))
 
     def _get(self, path: str) -> Any:
         root, *rest = path.split(".")

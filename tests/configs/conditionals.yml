@@ -1,0 +1,36 @@
+environment: production
+debug_mode: false
+version: "2.1.0"
+
+features:
+  new_dashboard: true
+  beta_api: false
+  analytics: true
+
+app:
+  name: MyApp
+  workers: ${8 if environment == 'production' else 2}
+  log_level: ${'INFO' if environment == 'production' else 'DEBUG'}
+  debug_enabled: ${debug_mode or environment == 'development'}
+  
+database:
+  host: ${'prod-db.example.com' if environment == 'production' else 'localhost'}
+  port: ${5432 if environment == 'production' else 5433}
+  ssl: ${True if environment == 'production' else False}
+  pool_size: ${20 if environment == 'production' else 5}
+
+cache:
+  enabled: ${True if environment != 'development' else False}
+  ttl: ${3600 if environment == 'production' else 300}
+  provider: ${'redis' if environment == 'production' else 'memory'}
+
+monitoring:
+  enabled: ${features.analytics and environment != 'development'}
+  dashboard: ${'new' if features.new_dashboard else 'legacy'}
+  api_monitoring: ${features.beta_api and environment == 'production'}
+
+services:
+  external_api:
+    enabled: ${not debug_mode}
+    timeout: ${30 if environment == 'production' else 10}
+    retries: ${3 if environment == 'production' else 1}
