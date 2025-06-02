@@ -34,7 +34,6 @@ app:
   version: "2.0"
   workers: 4
 
-# Math expressions with proper operator precedence
 database:
   pool_size: ${app.workers * 2}           # 4 * 2 = 8
   timeout: ${app.workers + 5}             # 4 + 5 = 9
@@ -45,11 +44,6 @@ paths:
   data: !@pathlib.Path
     - ${paths.base}
     - data.yml
-
-# Complex expressions work too!
-calculations:
-  complex: ${10 + app.workers * 2}        # 10 + 8 = 18 (not 28!)
-  division: ${100 // app.workers}         # 100 // 4 = 25
 
 hostdefault: !@pyamlo.call "${services.main.as_dict}" 
 
