@@ -29,8 +29,6 @@ examples/ignite/
 
 ### Prerequisites
 
-Ensure you have [hatch](https://hatch.pypa.io/) installed, then install PYAMLO with machine learning dependencies:
-
 ```bash
 pip install -e .[ml]  # Install PYAMLO with ML dependencies
 ```
