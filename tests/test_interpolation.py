@@ -19,8 +19,8 @@ def test_interpolation(tmp_path):
 
 def test_resolve_string_interpolation():
     resolver = Resolver()
-    resolver.instances["var1"] = "hello"
-    resolver.instances["var2"] = "world"
+    resolver.ctx["var1"] = "hello"
+    resolver.ctx["var2"] = "world"
 
     assert resolver.resolve("${var1}") == "hello"
     assert resolver.resolve("say ${var1} ${var2}!") == "say hello world!"
@@ -28,14 +28,14 @@ def test_resolve_string_interpolation():
 
 def test_resolve_mapping_interpolation():
     resolver = Resolver()
-    resolver.instances["var1"] = "world"
-    resolver.instances["map1"] = {"nested": "hello"}
+    resolver.ctx["var1"] = "world"
+    resolver.ctx["map1"] = {"nested": "hello"}
     assert resolver.resolve("${map1.nested} ${var1}") == "hello world"
 
 
 def test_resolve_dict_nested():
     resolver = Resolver()
-    resolver.instances["var"] = "test"
+    resolver.ctx["var"] = "test"
 
     data = {"a": {"b": "${var}", "c": {"d": "before ${var} after"}}}
 
@@ -48,7 +48,7 @@ def test_resolve_dict_nested():
 
 def test_resolve_include_with_interpolation(tmp_path):
     resolver = Resolver()
-    resolver.instances["base_dir"] = str(tmp_path)
+    resolver.ctx["base_dir"] = str(tmp_path)
 
     test_file = tmp_path / "test.yml"
     test_file.write_text("key: value")
@@ -67,5 +67,5 @@ def test_resolve_include_interpolation_error():
 
 def test_resolve_empty_var():
     resolver = Resolver()
-    resolver.instances["var"] = ""
+    resolver.ctx["var"] = ""
     assert resolver.resolve("prefix${var}suffix") == "prefixsuffix"

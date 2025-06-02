@@ -11,8 +11,8 @@ from pyamlo.expressions import ExpressionError
 def test_basic_math_operations():
     """Test basic arithmetic operations."""
     resolver = Resolver()
-    resolver.instances["a"] = 10
-    resolver.instances["b"] = 3
+    resolver.ctx["a"] = 10
+    resolver.ctx["b"] = 3
     
     # Addition
     assert resolver.resolve("${a + b}") == 13
@@ -39,7 +39,7 @@ def test_basic_math_operations():
 def test_math_with_literals():
     """Test math operations with literal numbers."""
     resolver = Resolver()
-    resolver.instances["count"] = 5
+    resolver.ctx["count"] = 5
     
     # Variable with literal
     assert resolver.resolve("${count * 2}") == 10
@@ -54,8 +54,8 @@ def test_math_with_literals():
 def test_math_in_string_interpolation():
     """Test math expressions within string interpolation."""
     resolver = Resolver()
-    resolver.instances["workers"] = 4
-    resolver.instances["factor"] = 2
+    resolver.ctx["workers"] = 4
+    resolver.ctx["factor"] = 2
     
     result = resolver.resolve("Total workers: ${workers * factor}")
     assert result == "Total workers: 8"
@@ -67,8 +67,8 @@ def test_math_in_string_interpolation():
 def test_math_with_nested_variables():
     """Test math expressions with nested object references."""
     resolver = Resolver()
-    resolver.instances["app"] = {"workers": 4, "scaling": 2.5}
-    resolver.instances["config"] = {"base_port": 8000}
+    resolver.ctx["app"] = {"workers": 4, "scaling": 2.5}
+    resolver.ctx["config"] = {"base_port": 8000}
     
     assert resolver.resolve("${app.workers * app.scaling}") == 10.0
     assert resolver.resolve("${config.base_port + app.workers}") == 8004
@@ -112,8 +112,8 @@ def test_complex_config_with_math():
 def test_math_expression_errors():
     """Test error handling for invalid math expressions."""
     resolver = Resolver()
-    resolver.instances["zero"] = 0
-    resolver.instances["text"] = "hello"
+    resolver.ctx["zero"] = 0
+    resolver.ctx["text"] = "hello"
     
     # Division by zero
     with pytest.raises(ExpressionError, match="Division by zero"):
@@ -145,7 +145,7 @@ def test_operator_precedence():
 def test_floating_point_results():
     """Test that floating point operations work correctly."""
     resolver = Resolver()
-    resolver.instances["pi"] = 3.14159
+    resolver.ctx["pi"] = 3.14159
     
     assert resolver.resolve("${pi * 2}") == pytest.approx(6.28318)
     assert resolver.resolve("${22 / 7}") == pytest.approx(3.142857)

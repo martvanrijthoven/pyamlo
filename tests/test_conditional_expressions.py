@@ -12,9 +12,9 @@ from pyamlo.expressions import ExpressionError
 def test_basic_comparison_operations():
     """Test basic comparison operations."""
     resolver = Resolver()
-    resolver.instances["a"] = 10
-    resolver.instances["b"] = 5
-    resolver.instances["c"] = 10
+    resolver.ctx["a"] = 10
+    resolver.ctx["b"] = 5
+    resolver.ctx["c"] = 10
     
     # Equal
     assert resolver.resolve("${a == c}") is True
@@ -46,9 +46,9 @@ def test_basic_comparison_operations():
 def test_string_comparisons():
     """Test comparisons with string values."""
     resolver = Resolver()
-    resolver.instances["env"] = "production"
-    resolver.instances["debug_env"] = "development"
-    resolver.instances["name"] = "test_app"
+    resolver.ctx["env"] = "production"
+    resolver.ctx["debug_env"] = "development"
+    resolver.ctx["name"] = "test_app"
     
     # String equality
     assert resolver.resolve("${env == 'production'}") is True
@@ -66,10 +66,10 @@ def test_string_comparisons():
 def test_logical_operations():
     """Test logical and/or/not operations."""
     resolver = Resolver()
-    resolver.instances["is_prod"] = True
-    resolver.instances["is_debug"] = False
-    resolver.instances["workers"] = 4
-    resolver.instances["max_workers"] = 8
+    resolver.ctx["is_prod"] = True
+    resolver.ctx["is_debug"] = False
+    resolver.ctx["workers"] = 4
+    resolver.ctx["max_workers"] = 8
     
     # AND operations
     assert resolver.resolve("${is_prod and workers > 2}") is True
@@ -90,9 +90,9 @@ def test_logical_operations():
 def test_python_ternary_conditionals():
     """Test Python's ternary conditional expressions (value_if_true if condition else value_if_false)."""
     resolver = Resolver()
-    resolver.instances["env"] = "production"
-    resolver.instances["debug"] = False
-    resolver.instances["workers"] = 4
+    resolver.ctx["env"] = "production"
+    resolver.ctx["debug"] = False
+    resolver.ctx["workers"] = 4
     
     # Basic ternary
     assert resolver.resolve("${'INFO' if env == 'production' else 'DEBUG'}") == "INFO"
@@ -114,8 +114,8 @@ def test_python_ternary_conditionals():
 def test_nested_conditional_expressions():
     """Test nested and complex conditional expressions."""
     resolver = Resolver()
-    resolver.instances["app"] = {"env": "production", "scaling": True}
-    resolver.instances["base_workers"] = 2
+    resolver.ctx["app"] = {"env": "production", "scaling": True}
+    resolver.ctx["base_workers"] = 2
     
     # Nested object access in conditionals
     assert resolver.resolve("${4 if app.env == 'production' else 2}") == 4
@@ -133,9 +133,9 @@ def test_nested_conditional_expressions():
 def test_conditional_expressions_in_strings():
     """Test conditional expressions within string interpolation."""
     resolver = Resolver()
-    resolver.instances["env"] = "production"
-    resolver.instances["feature_enabled"] = True
-    resolver.instances["version"] = "1.2.3"
+    resolver.ctx["env"] = "production"
+    resolver.ctx["feature_enabled"] = True
+    resolver.ctx["version"] = "1.2.3"
     
     # String with conditional
     result = resolver.resolve("Log level: ${'INFO' if env == 'production' else 'DEBUG'}")
@@ -193,8 +193,8 @@ def test_complex_config_with_conditionals():
 def test_conditional_expression_errors():
     """Test error handling for invalid conditional expressions."""
     resolver = Resolver()
-    resolver.instances["env"] = "production"
-    resolver.instances["number"] = 42
+    resolver.ctx["env"] = "production"
+    resolver.ctx["number"] = 42
     
     # Invalid syntax
     with pytest.raises(ExpressionError, match="Invalid expression"):
@@ -212,9 +212,9 @@ def test_conditional_expression_errors():
 def test_mixed_math_and_conditional_expressions():
     """Test expressions that combine math and conditional logic."""
     resolver = Resolver()
-    resolver.instances["env"] = "production"
-    resolver.instances["base_workers"] = 2
-    resolver.instances["scaling_factor"] = 3
+    resolver.ctx["env"] = "production"
+    resolver.ctx["base_workers"] = 2
+    resolver.ctx["scaling_factor"] = 3
     
     # Math within conditional
     assert resolver.resolve("${base_workers * scaling_factor if env == 'production' else base_workers}") == 6
@@ -230,10 +230,10 @@ def test_mixed_math_and_conditional_expressions():
 def test_boolean_conditionals():
     """Test conditionals with boolean values."""
     resolver = Resolver()
-    resolver.instances["is_enabled"] = True
-    resolver.instances["is_debug"] = False
-    resolver.instances["count"] = 0
-    resolver.instances["name"] = ""
+    resolver.ctx["is_enabled"] = True
+    resolver.ctx["is_debug"] = False
+    resolver.ctx["count"] = 0
+    resolver.ctx["name"] = ""
     
     # Direct boolean evaluation
     assert resolver.resolve("${is_enabled}") is True
@@ -278,7 +278,7 @@ def test_yaml_file_with_conditionals():
 def test_environment_based_conditionals():
     """Test common pattern of environment-based configuration."""
     resolver = Resolver()
-    resolver.instances["ENV"] = "staging"
+    resolver.ctx["ENV"] = "staging"
     
     # Multi-environment conditionals
     log_level = resolver.resolve("${'ERROR' if ENV == 'production' else ('WARN' if ENV == 'staging' else 'DEBUG')}")

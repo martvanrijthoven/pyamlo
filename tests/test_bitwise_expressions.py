@@ -6,9 +6,9 @@ from pyamlo.resolve import Resolver
 def test_bitwise_and_operations():
     """Test bitwise AND operations."""
     resolver = Resolver()
-    resolver.instances["a"] = 12  # Binary: 1100
-    resolver.instances["b"] = 5   # Binary: 0101
-    resolver.instances["c"] = 15  # Binary: 1111
+    resolver.ctx["a"] = 12  # Binary: 1100
+    resolver.ctx["b"] = 5   # Binary: 0101
+    resolver.ctx["c"] = 15  # Binary: 1111
     
     # Basic AND
     assert resolver.resolve("${a & b}") == 4    # 1100 & 0101 = 0100
@@ -23,9 +23,9 @@ def test_bitwise_and_operations():
 def test_bitwise_or_operations():
     """Test bitwise OR operations."""
     resolver = Resolver()
-    resolver.instances["a"] = 12  # Binary: 1100
-    resolver.instances["b"] = 5   # Binary: 0101
-    resolver.instances["c"] = 0   # Binary: 0000
+    resolver.ctx["a"] = 12  # Binary: 1100
+    resolver.ctx["b"] = 5   # Binary: 0101
+    resolver.ctx["c"] = 0   # Binary: 0000
     
     # Basic OR
     assert resolver.resolve("${a | b}") == 13   # 1100 | 0101 = 1101
@@ -40,9 +40,9 @@ def test_bitwise_or_operations():
 def test_bitwise_xor_operations():
     """Test bitwise XOR operations."""
     resolver = Resolver()
-    resolver.instances["a"] = 12  # Binary: 1100
-    resolver.instances["b"] = 5   # Binary: 0101
-    resolver.instances["c"] = 12  # Binary: 1100 (same as a)
+    resolver.ctx["a"] = 12  # Binary: 1100
+    resolver.ctx["b"] = 5   # Binary: 0101
+    resolver.ctx["c"] = 12  # Binary: 1100 (same as a)
     
     # Basic XOR
     assert resolver.resolve("${a ^ b}") == 9    # 1100 ^ 0101 = 1001
@@ -57,9 +57,9 @@ def test_bitwise_xor_operations():
 def test_bitwise_not_operations():
     """Test bitwise NOT operations."""
     resolver = Resolver()
-    resolver.instances["a"] = 12    # Binary: 1100
-    resolver.instances["b"] = 0     # Binary: 0000
-    resolver.instances["neg"] = -1  # Binary: all 1s in two's complement
+    resolver.ctx["a"] = 12    # Binary: 1100
+    resolver.ctx["b"] = 0     # Binary: 0000
+    resolver.ctx["neg"] = -1  # Binary: all 1s in two's complement
     
     # Basic NOT (two's complement)
     assert resolver.resolve("${~a}") == -13     # ~12 = -13
@@ -74,8 +74,8 @@ def test_bitwise_not_operations():
 def test_bitwise_shift_operations():
     """Test bitwise shift operations."""
     resolver = Resolver()
-    resolver.instances["num"] = 12  # Binary: 1100
-    resolver.instances["small"] = 3 # Binary: 11
+    resolver.ctx["num"] = 12  # Binary: 1100
+    resolver.ctx["small"] = 3 # Binary: 11
     
     # Left shift (multiply by powers of 2)
     assert resolver.resolve("${num << 1}") == 24   # 12 << 1 = 24 (12 * 2)
@@ -95,9 +95,9 @@ def test_bitwise_shift_operations():
 def test_bitwise_operator_precedence():
     """Test bitwise operator precedence."""
     resolver = Resolver()
-    resolver.instances["a"] = 8   # Binary: 1000
-    resolver.instances["b"] = 4   # Binary: 0100  
-    resolver.instances["c"] = 2   # Binary: 0010
+    resolver.ctx["a"] = 8   # Binary: 1000
+    resolver.ctx["b"] = 4   # Binary: 0100  
+    resolver.ctx["c"] = 2   # Binary: 0010
     
     # Shift has higher precedence than bitwise AND/OR/XOR
     assert resolver.resolve("${a | b << 1}") == 8   # a | (b << 1) = 8 | 8 = 8
@@ -148,8 +148,8 @@ def test_bitwise_in_config():
 def test_bitwise_with_math_operations():
     """Test combining bitwise with arithmetic operations."""
     resolver = Resolver()
-    resolver.instances["base"] = 8
-    resolver.instances["mask"] = 3
+    resolver.ctx["base"] = 8
+    resolver.ctx["mask"] = 3
     
     # Bitwise operations with arithmetic
     assert resolver.resolve("${(base << 1) + mask}") == 19  # (8 << 1) + 3 = 16 + 3 = 19

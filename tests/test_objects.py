@@ -42,14 +42,14 @@ def test_systeminfo_as_dict():
 
 
 def test_deep_merge_call_spec_patch():
-    base = {"key": CallSpec("test", [], {"a": 1}, None)}
+    base = {"key": CallSpec("test", [], {"a": 1})}
     patch = {"key": PatchSpec({"b": 2})}
     result = deep_merge(base, patch)
     assert result["key"].kwargs == {"b": 2}
 
 
 def test_deep_merge_call_spec_dict():
-    base = {"key": CallSpec("test", [], {"a": 1}, None)}
+    base = {"key": CallSpec("test", [], {"a": 1})}
     patch = {"key": {"b": 2}}
     result = deep_merge(base, patch)
     assert result["key"].kwargs == {"a": 1, "b": 2}

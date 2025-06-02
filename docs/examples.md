@@ -64,14 +64,21 @@ Result: `admin` is `{'user': 'root', 'id': 1}`, `guests` is `["guest1", "guest2"
 
 ### Python Object Instantiation
 ```yaml
+# Use hierarchical path references
 main_db: !@mydb.Database
   dsn: ${db_url}
   pool_size: 10
 
 worker: !@myapp.Worker
   db: ${main_db}
+
+# References follow YAML structure
+app:
+  db_connection: ${main_db}
+  worker_instance: ${worker}
 ```
-Reference the actual Python object via `${main_db}` elsewhere in the config.
+
+Reference Python objects via `${main_db}` elsewhere in the config.
 
 
 ### Advanced Variable Interpolation

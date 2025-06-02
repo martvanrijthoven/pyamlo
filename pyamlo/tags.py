@@ -31,12 +31,10 @@ class CallSpec:
         path: str,
         args: list[Any],
         kwargs: dict[str, Any],
-        id_: Optional[str],
     ) -> None:
         self.path: str = path
         self.args: list[Any] = args
         self.kwargs: dict[str, Any] = kwargs
-        self.id: Optional[str] = id_
 
 
 class IncludeSpec:
@@ -101,15 +99,14 @@ def construct_callspec(
 ) -> CallSpec:
     if isinstance(node, MappingNode):
         mapping: dict[Hashable, Any] = loader.construct_mapping(node, deep=True)
-        id_ = mapping.pop("id", None)
-        return CallSpec(suffix, [], mapping, id_)  # type: ignore
+        return CallSpec(suffix, [], mapping)  # type: ignore
     if isinstance(node, SequenceNode):
         seq: list[Any] = loader.construct_sequence(node, deep=True)
-        return CallSpec(suffix, seq, {}, None)
+        return CallSpec(suffix, seq, {})
     if isinstance(node, ScalarNode):
         val = loader.construct_scalar(node)
         args: list[Any] = [] if val in (None, "") else [val]
-        return CallSpec(suffix, args, {}, None)
+        return CallSpec(suffix, args, {})
     raise TagError(f"Unsupported !@ tag '{suffix}' at {node.start_mark}")
 
 

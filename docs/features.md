@@ -36,42 +36,6 @@ config = load_config(['base.yaml', 'production.yaml', 'user-override.yaml'])
 - Instantiate Python classes or call functions directly from YAML.
 - Supports positional, keyword, and scalar arguments.
 
-### Named Instances with IDs
-Objects created with `!@` tags can be given explicit IDs for cross-referencing from anywhere in the configuration:
-
-```yaml
-# Define objects with explicit IDs
-database: !@dict
-  id: "primary_db"
-  host: "localhost"
-  port: 5432
-
-cache: !@dict
-  id: "redis_cache"  
-  host: "cache.example.com"
-  port: 6379
-
-# Reference by ID from anywhere (not just hierarchical path)
-app:
-  db_connection: "${primary_db.host}:${primary_db.port}"   # localhost:5432
-  cache_url: "${redis_cache.host}:${redis_cache.port}"     # cache.example.com:6379
-
-# You can still reference by path too
-local_db: "${database.host}"  # localhost
-```
-
-**Key Benefits:**
-- **Cross-referencing**: Reference objects by logical names rather than file location
-- **Includes-friendly**: Named instances work seamlessly across included files
-- **Flexible naming**: IDs don't need to follow the hierarchical path structure
-
-### Namespace Resolution Priority
-When resolving variables like `${variable}`, PYAMLO searches in this order:
-1. **Context (structured data)**: Hierarchical configuration from the file structure
-2. **Named instances**: Objects with explicit `id` attributes
-
-This ensures that structured configuration data takes precedence over named instances, preventing conflicts when including files.
-
 ## Variable Interpolation & Expressions (`${...}`)
 Reference other config values, perform calculations, and evaluate conditions within your YAML configuration.
 

@@ -15,7 +15,6 @@ class Resolver:
 
     def __init__(self) -> None:
         self.ctx: dict[str, Any] = {}
-        self.instances: dict[str, Any] = {}
         self._expression_evaluator = ExpressionEvaluator(self._get)
 
     @singledispatchmethod
@@ -41,9 +40,6 @@ class Resolver:
         args = [self.resolve(a, path) for a in node.args]
         kwargs = {k: self.resolve(v, path) for k, v in node.kwargs.items()}
         inst = _apply_call(fn, args, kwargs)
-        name = node.id or path
-        if name:
-            self.instances[name] = inst
         self.ctx[path] = inst
         return inst
 
@@ -80,12 +76,7 @@ class Resolver:
     def _get(self, path: str) -> Any:
         root, *rest = path.split(".")
         
-        # Prioritize context (structured data like dicts) over instances
-        # This fixes namespace conflicts when including files
         obj = self.ctx.get(root)
-        if obj is None:
-            obj = self.instances.get(root)
-        
         if obj is None:
             raise ResolutionError(f"Unknown variable '{root}'")
         for tok in rest:
