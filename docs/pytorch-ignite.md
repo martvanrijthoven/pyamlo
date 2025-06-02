@@ -23,7 +23,10 @@ examples/ignite/
 ├── evaluators/
 │   └── supervised.yml  # Evaluation engine and metrics
 ├── models/
-│   └── cnn.yml         # Model architecture configuration
+│   ├── selector.yml    # Dynamic model selection
+│   └── architectures/  # Individual model definitions
+│       ├── cnn.yml
+│       └── resnet.yml
 ├── trainers/
 │   └── supervised.yml  # Training engine and optimizer
 ├── run_modular.yml     # Modular configuration
@@ -126,21 +129,17 @@ train_loader: !@torch.utils.data.DataLoader
 ```
 
 
-#### 3. Model Configuration (`models/cnn.yml`)
+#### 3. Model Configuration (`models/selector.yml`)
 
-Defines the CNN architecture:
+Dynamically selects model architecture:
 
 ```yaml
-model: !@torch.nn.Sequential
-  - !@torch.nn.Conv2d
-    in_channels: 1
-    out_channels: 32
-    kernel_size: 3
-    padding: 1
-  - !@torch.nn.ReLU
-  - !@torch.nn.MaxPool2d
-    kernel_size: 2
-  # ... more layers
+model_name: cnn  # Default model
+_model: !include ./architectures/${model_name}.yml
+model: ${_model.architecture}
+_model_device_setup: !@pyamlo.call
+  calling: ${model.to}
+  device: ${device}
 ```
 
 #### 4. Trainer Configuration (`trainers/supervised.yml`)
@@ -195,7 +194,7 @@ Main orchestration file that coordinates all components:
 include!:
   - ./devices/auto.yml 
   - ./datasets/mnist.yml
-  - ./models/cnn.yml
+  - ./models/selector.yml
   - ./trainers/supervised.yml
   - ./evaluators/supervised.yml
 
@@ -217,15 +216,6 @@ eval_result: !@pyamlo.call
 
 results_msg: !@print "Evaluation completed! ${evaluator.state.metrics}"
 ```
-
-# Run final evaluation
-eval_result: !@pyamlo.call
-  calling: ${evaluator.run}
-  data: ${val_loader}
-
-results_msg: !@print "Evaluation completed! ${evaluator.state.metrics}"
-```
-
 
 ## Model Architecture
 
@@ -311,8 +301,6 @@ evaluator: !@ignite.engine.create_supervised_evaluator
   metrics: ${metrics}
   device: ${device}
 ```
-  device: ${device}
-```
 
 ### Configuration Overrides
 
@@ -385,6 +373,57 @@ learning_rate: !env {var: LEARNING_RATE, default: 0.001}
 batch_size: !env {var: BATCH_SIZE, default: 64}
 num_epochs: !env {var: NUM_EPOCHS, default: 1}
 ```
+
+## Dynamic Model Selection
+
+PYAMLO supports dynamic model selection through parametrized includes, allowing you to easily switch between different model architectures via CLI overrides.
+
+### Model Selector Pattern
+
+Create a model selector that dynamically includes architecture files based on a parameter:
+
+```yaml
+# models/selector.yml
+model_name: cnn  # Default model
+_model: !include ./architectures/${model_name}.yml
+model: ${_model.architecture}
+_model_device_setup: !@pyamlo.call
+  calling: ${model.to}
+  device: ${device}
+```
+
+Individual architecture files contain their model definitions:
+
+```yaml
+# models/architectures/cnn.yml
+architecture: !@torch.nn.Sequential
+  - !@torch.nn.Conv2d [1, 32, 3, 1, 1]
+  - !@torch.nn.ReLU
+  - !@torch.nn.MaxPool2d [2]
+  # ... more layers
+```
+
+```yaml
+# models/architectures/resnet.yml
+architecture: !@torch.nn.Sequential
+  - !@torch.nn.Conv2d [1, 64, 7, 2, 3, false]
+  - !@torch.nn.BatchNorm2d [64]
+  - !@torch.nn.ReLU [true]
+  # ... more layers
+```
+
+### Usage
+
+Switch between models using CLI overrides:
+
+```bash
+# Use default CNN model
+python -m pyamlo run_modular.yml
+
+# Switch to ResNet model
+python -m pyamlo run_modular.yml 'pyamlo.model_name=resnet'
+```
+
 
 ## Best Practices
 

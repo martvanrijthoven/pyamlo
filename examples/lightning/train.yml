@@ -1,4 +1,3 @@
-# train configuration - includes data and model configs, defines trainer and starts training
 # Run with: PYTHONPATH=. python -m pyamlo main.yml
 
 # Include data and model configurations

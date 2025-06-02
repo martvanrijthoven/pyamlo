@@ -88,10 +88,15 @@ class Resolver:
         return obj
 
 
-def call(calling, **kwargs):
+def call(calling, start_msg=None, finish_msg=None, **kwargs):
+    if start_msg is not None:
+        print(start_msg)
     if not kwargs:
         return calling()
-    return calling(**kwargs)
+    out = calling(**kwargs)
+    if finish_msg is not None:
+        print(finish_msg)
+    return out 
 
 
 def _import_attr(path: str):

@@ -1,0 +1,101 @@
+# Modern CNN using torchvision ResNet adapted for MNIST
+# Simpler and more declarative approach than EfficientNet modification
+
+# Use ResNet18 as base but create custom version for MNIST
+architecture: !@torch.nn.Sequential
+  # Custom input block for MNIST (1 channel -> 64)
+  - !@torch.nn.Conv2d
+    in_channels: 1
+    out_channels: 64
+    kernel_size: 7
+    stride: 2
+    padding: 3
+    bias: false
+  - !@torch.nn.BatchNorm2d
+    num_features: 64
+  - !@torch.nn.ReLU
+    inplace: true
+  - !@torch.nn.MaxPool2d
+    kernel_size: 3
+    stride: 2
+    padding: 1
+  
+  # ResNet-style basic blocks
+  # Block 1: 64 -> 64
+  - !@torch.nn.Conv2d
+    in_channels: 64
+    out_channels: 64
+    kernel_size: 3
+    padding: 1
+    bias: false
+  - !@torch.nn.BatchNorm2d
+    num_features: 64
+  - !@torch.nn.ReLU
+    inplace: true
+  - !@torch.nn.Conv2d
+    in_channels: 64
+    out_channels: 64
+    kernel_size: 3
+    padding: 1
+    bias: false
+  - !@torch.nn.BatchNorm2d
+    num_features: 64
+  - !@torch.nn.ReLU
+    inplace: true
+  
+  # Block 2: 64 -> 128 with stride
+  - !@torch.nn.Conv2d
+    in_channels: 64
+    out_channels: 128
+    kernel_size: 3
+    stride: 2
+    padding: 1
+    bias: false
+  - !@torch.nn.BatchNorm2d
+    num_features: 128
+  - !@torch.nn.ReLU
+    inplace: true
+  - !@torch.nn.Conv2d
+    in_channels: 128
+    out_channels: 128
+    kernel_size: 3
+    padding: 1
+    bias: false
+  - !@torch.nn.BatchNorm2d
+    num_features: 128
+  - !@torch.nn.ReLU
+    inplace: true
+  
+  # Block 3: 128 -> 256 with stride
+  - !@torch.nn.Conv2d
+    in_channels: 128
+    out_channels: 256
+    kernel_size: 3
+    stride: 2
+    padding: 1
+    bias: false
+  - !@torch.nn.BatchNorm2d
+    num_features: 256
+  - !@torch.nn.ReLU
+    inplace: true
+  - !@torch.nn.Conv2d
+    in_channels: 256
+    out_channels: 256
+    kernel_size: 3
+    padding: 1
+    bias: false
+  - !@torch.nn.BatchNorm2d
+    num_features: 256
+  - !@torch.nn.ReLU
+    inplace: true
+  
+  # Global average pooling and classifier
+  - !@torch.nn.AdaptiveAvgPool2d
+    output_size: [1, 1]
+  - !@torch.nn.Flatten
+  - !@torch.nn.Dropout
+    p: 0.5
+  - !@torch.nn.Linear
+    in_features: 256
+    out_features: 10
+
