@@ -35,9 +35,9 @@ app:
   workers: 4
 
 database:
-  pool_size: ${app.workers * 2}           # 4 * 2 = 8
-  timeout: ${app.workers + 5}             # 4 + 5 = 9
-  max_connections: ${2 ** app.workers}    # 2^4 = 16
+  pool_size: ${app.workers * 2}           
+  timeout: ${app.workers + 5}             
+  max_connections: ${2 ** app.workers}    
 
 paths:
   base: !@pathlib.Path /opt/${app.name}
