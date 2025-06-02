@@ -1,6 +1,3 @@
-# Simple Ignite example - pure YAML configuration for MNIST training
-# Run with: python -m pyamlo simple.yml
-
 # Data transforms for MNIST
 transform: !@torchvision.transforms.Compose
   transforms:
