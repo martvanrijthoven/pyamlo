@@ -1,12 +1,5 @@
 """Configuration loading and processing."""
 
-import getpass
-import platform
-from pprint import pprint
-import socket
-from collections.abc import Mapping
-from dataclasses import asdict, dataclass, field
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import IO, Any, Optional, Sequence, Union
 
@@ -101,17 +94,3 @@ def load_config(
     if all_overrides:
         config = process_cli(config, all_overrides)
     return Resolver().resolve(config)
-
-
-@dataclass(frozen=True, slots=True)
-class SystemInfo:
-    host: str = field(default_factory=socket.gethostname)
-    user: str = field(default_factory=getpass.getuser)
-    os: str = field(default_factory=platform.system)
-    arch: str = field(default_factory=platform.machine)
-    python: str = field(default_factory=platform.python_version)
-    cwd: str = field(default_factory=lambda: str(Path.cwd()))
-    started: datetime = field(default_factory=lambda: datetime.now(UTC))
-
-    def as_dict(self) -> Mapping[str, Any]:
-        return asdict(self)

@@ -5,7 +5,6 @@ from pathlib import Path
 from yaml import ScalarNode
 
 from pyamlo import load_config
-from pyamlo.config import SystemInfo
 from pyamlo.merge import deep_merge
 from pyamlo.resolve import call
 from pyamlo.tags import CallSpec, ConfigLoader, PatchSpec, construct_callspec
@@ -16,8 +15,8 @@ def test_object_instantiation():
     config = load_config(config_path)
     assert isinstance(config["path"], pathlib.Path)
     assert str(config["path"]) == "/tmp/test"
-    assert hasattr(config["sysinfo"], "as_dict")
-    assert isinstance(config["call"], dict)
+    assert config["counter"] == Counter([1, 1, 1, 4, 5])
+    assert config["complex"] == complex(2, 3)
 
 
 def test_object_instantiation_with_file_object():
@@ -26,19 +25,8 @@ def test_object_instantiation_with_file_object():
         config = load_config(f)
     assert isinstance(config["path"], pathlib.Path)
     assert str(config["path"]) == "/tmp/test"
-    assert hasattr(config["sysinfo"], "as_dict")
-    assert isinstance(config["call"], dict)
     assert config["counter"] == Counter([1, 1, 1, 4, 5])
     assert config["complex"] == complex(2, 3)
-
-
-def test_systeminfo_as_dict():
-    info = SystemInfo()
-    data = info.as_dict()
-    assert isinstance(data, dict)
-    assert "host" in data
-    assert "user" in data
-    assert "started" in data
 
 
 def test_deep_merge_call_spec_patch():
