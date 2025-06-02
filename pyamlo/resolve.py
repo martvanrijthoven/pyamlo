@@ -75,7 +75,6 @@ class Resolver:
 
     def _get(self, path: str) -> Any:
         root, *rest = path.split(".")
-        
         obj = self.ctx.get(root)
         if obj is None:
             raise ResolutionError(f"Unknown variable '{root}'")
