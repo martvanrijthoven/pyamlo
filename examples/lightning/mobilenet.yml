@@ -1,0 +1,5 @@
+model: !@torchvision.models.mobilenet_v2
+  num_classes: 10
+lightning_model: !@simple_cnn.LightningModel
+  model: ${model}
+  lr: 0.001

@@ -79,7 +79,13 @@ class Resolver:
 
     def _get(self, path: str) -> Any:
         root, *rest = path.split(".")
-        obj = self.instances.get(root, self.ctx.get(root))
+        
+        # Prioritize context (structured data like dicts) over instances
+        # This fixes namespace conflicts when including files
+        obj = self.ctx.get(root)
+        if obj is None:
+            obj = self.instances.get(root)
+        
         if obj is None:
             raise ResolutionError(f"Unknown variable '{root}'")
         for tok in rest:

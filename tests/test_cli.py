@@ -78,9 +78,13 @@ def test_process_cli_empty():
 
 def test_integration_with_includes():
     """Test CLI overrides working with included files."""
-    yaml_content = """
+    import os
+    test_dir = os.path.dirname(__file__)
+    base_yaml_path = os.path.join(test_dir, "configs", "base.yaml")
+    
+    yaml_content = f"""
 include!:
-  - tests/configs/base.yaml
+  - {base_yaml_path}
 debug: false
     """
     config = load_config(

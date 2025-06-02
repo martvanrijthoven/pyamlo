@@ -1,27 +1,73 @@
 # Best Practices
 
-## Using Environment Variables
-- Always provide a default for non-critical env vars:
-  ```yaml
-  db_url: !env {var: DATABASE_URL, default: "sqlite:///default.db"}
-  ```
-
 ## Avoiding Common Pitfalls
 - Do not use `!patch` unless you want to fully replace a dictionary.
 - Use `!extend` only on lists.
 - Use `${...}` for referencing both config values and object attributes.
 
-## Testing Configs
-- Use PYAMLO in your test suite to validate all config files load and resolve as expected.
-- Example pytest:
-  ```python
-  import pytest
-  from pyamlo import load_config
-  @pytest.mark.parametrize("fname", ["prod.yaml", "dev.yaml"])
-  def test_config_loads(fname):
-      with open(fname) as f:
-          cfg, _ = load_config(f)
-      assert "app" in cfg
+## Named Instances and Namespace Resolution
+
+### When to Use Named Instances
+Use explicit `id` attributes for objects that need to be referenced from multiple places:
+
+```yaml
+# Good: Central database config with explicit ID
+database: !@dict
+  id: "primary_db"
+  host: "localhost"
+  port: 5432
+
+# Good: Reference from multiple places
+app:
+  db_url: "${primary_db.host}:${primary_db.port}"
+logging:
+  db_handler: "${primary_db.host}"
+```
+
+### Avoid ID Conflicts
+Choose unique, descriptive IDs to prevent namespace conflicts:
+
+```yaml
+# Bad: Generic IDs that might conflict
+cache: !@dict
+  id: "config"  # Too generic!
+  
+database: !@dict  
+  id: "config"  # Conflict!
+
+# Good: Specific, descriptive IDs
+cache: !@dict
+  id: "redis_cache"
+  
+database: !@dict
+  id: "postgres_db"
+```
+
+### Include-Safe Patterns
+When using includes, structure references to be namespace-safe:
+
+```yaml
+# base.yaml
+database:
+  host: "localhost"  # Structured data takes precedence
+  
+# production.yaml  
+include!: 
+  - base.yaml
+  
+database:
+  host: "prod-db.com"  # This overrides the included value
+
+# References resolve correctly regardless of include order
+app:
+  db_host: "${database.host}"  # Always gets the final merged value
+```
+
+
+## Using Environment Variables
+- Always provide a default for non-critical env vars:
+  ```yaml
+  db_url: !env {var: DATABASE_URL, default: "sqlite:///default.db"}
   ```
 
 ## CLI Overrides Best Practices

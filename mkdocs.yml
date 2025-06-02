@@ -8,6 +8,7 @@ nav:
   - Home: index.md
   - Features: features.md
   - Examples: examples.md
+  - PyTorch Ignite: pytorch-ignite.md
   - Best Practices: best-practices.md
 
   
@@ -35,7 +36,6 @@ theme:
         name: Switch to light mode
   features:
     - navigation.tabs
-    - navigation.sections
     - toc.integrate
     - navigation.top
     - search.suggest
@@ -44,7 +44,6 @@ theme:
     - content.code.annotation
     - content.code.copy
     - announce.dismiss   # Allow users to dismiss the announcement
-
   # Add announcement bar
   announce: This project is in development. APIs may change without warning.
 extra_css:
@@ -83,3 +82,4 @@ markdown_extensions:
       alternate_style: true
   - toc:
       permalink: true
+      toc_depth: 2

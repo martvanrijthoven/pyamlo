@@ -115,4 +115,5 @@ uv.lock
 
 # example data for testing
 data
+examples/lightning/lightning_logs
 */__about__.py

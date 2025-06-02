@@ -1,6 +1,0 @@
-# torchvision_detection: !import torchvision.models.detection
-# model: !@torchvision.models.detection.fasterrcnn_resnet50_fpn
-#   weights: ${torchvision_detection.FasterRCNN_ResNet50_FPN_Weights.DEFAULT}
-
-datetime: !import datetime.datetime  # Import the datetime class from datetime module
-time: !@pyamlo.call ${datetime.now}

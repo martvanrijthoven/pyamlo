@@ -1,0 +1,4 @@
+cuda: !@torch.cuda.is_available
+device: !@torch.device
+  type: "${'cuda' if cuda else 'cpu'}"
+device_msg: !@print "Using device: ${device.type}"

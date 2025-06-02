@@ -1,0 +1,28 @@
+# Training configuration that imports data and model configs
+# Run with: python -m pyamlo train.yml
+
+# Import data and model configurations
+include!:
+  - device.yml 
+  - data.yml
+  - model.yml
+  - trainer.yml
+  - evaluator.yml
+
+epochs: 1
+
+# Start training for 1 epoch
+train_result: !@pyamlo.call
+  calling: ${trainer.run}
+  data: ${train_loader}
+  max_epochs: ${epochs}
+
+# Print completion message
+completion_msg: !@print "Training completed!"
+
+# Run final evaluation
+eval_result: !@pyamlo.call
+  calling: ${evaluator.run}
+  data: ${val_loader}
+
+results_msg: !@print "Evaluation completed! ${evaluator.state.metrics}"

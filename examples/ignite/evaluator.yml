@@ -1,0 +1,11 @@
+metrics:
+  accuracy: !@ignite.metrics.Accuracy
+  loss: !@ignite.metrics.Loss
+    loss_fn: ${criterion}
+  precision: !@ignite.metrics.Precision
+  recall: !@ignite.metrics.Recall
+
+evaluator: !@ignite.engine.create_supervised_evaluator
+  model: ${model}
+  metrics: ${metrics}
+  device: ${device}

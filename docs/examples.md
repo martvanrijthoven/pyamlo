@@ -1,5 +1,7 @@
 # Examples
 
+This page provides quick examples of PYAMLO's core features. For a comprehensive, real-world example, see the [PyTorch Ignite Tutorial](pytorch-ignite.md) which demonstrates a complete machine learning training pipeline using modular configuration.
+
 ## Minimal Example
 ```yaml
 app:
@@ -109,3 +111,17 @@ python -m pyamlo config.yaml pyamlo.app.name=NewApp pyamlo.database.host=localho
 from pyamlo import load_config
 config = load_config("config.yaml", use_cli=True)
 ```
+
+## Complete Examples
+
+### PyTorch Ignite Training Pipeline
+
+For a comprehensive example demonstrating PYAMLO's capabilities in a real machine learning project, see the [PyTorch Ignite Tutorial](pytorch-ignite.md). This example shows:
+
+- **Modular Configuration**: Split complex ML pipelines into focused, reusable components
+- **Automatic Device Detection**: Conditional CUDA/CPU configuration
+- **Object Instantiation**: Creating PyTorch models, optimizers, and training engines from YAML
+- **Variable Interpolation**: Sharing objects and values across configuration files
+- **Advanced Patterns**: Environment variables, conditional logic, and command-line overrides
+
+The tutorial includes both monolithic and modular approaches, demonstrating how to scale from simple prototypes to complex ML configurations.

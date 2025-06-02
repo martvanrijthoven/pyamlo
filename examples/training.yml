@@ -1,3 +1,0 @@
-include!:
-  - [training.yml, yamlotorch]
-  - [ptest2.yml, yamlotorch]

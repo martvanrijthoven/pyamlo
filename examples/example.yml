@@ -1,4 +1,0 @@
-name: cli_example
-description: Example configuration for CLI usage with pyamlo
-version: 1.0
-items: [1,2,3]

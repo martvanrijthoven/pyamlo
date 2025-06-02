@@ -1,2 +1,0 @@
-include!:
-  - models/faster_rcnn.yml

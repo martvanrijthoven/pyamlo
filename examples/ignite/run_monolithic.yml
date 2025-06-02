@@ -1,0 +1,119 @@
+# Simple Ignite example - pure YAML configuration for MNIST training
+# Run with: python -m pyamlo simple.yml
+
+# Data transforms for MNIST
+transform: !@torchvision.transforms.Compose
+  transforms:
+    - !@torchvision.transforms.ToTensor
+    - !@torchvision.transforms.Normalize
+      mean: [0.1307]
+      std: [0.3081]
+
+# Datasets
+train_dataset: !@torchvision.datasets.MNIST
+  root: "./data"
+  train: true
+  download: true
+  transform: ${transform}
+
+val_dataset: !@torchvision.datasets.MNIST
+  root: "./data" 
+  train: false
+  download: true
+  transform: ${transform}
+
+# DataLoaders
+train_loader: !@torch.utils.data.DataLoader
+  dataset: ${train_dataset}
+  batch_size: 64
+  shuffle: true
+
+val_loader: !@torch.utils.data.DataLoader
+  dataset: ${val_dataset}
+  batch_size: 64
+  shuffle: false
+
+# Simple CNN model
+model: !@torch.nn.Sequential
+  - !@torch.nn.Conv2d
+    in_channels: 1
+    out_channels: 32
+    kernel_size: 3
+    padding: 1
+  - !@torch.nn.ReLU
+  - !@torch.nn.MaxPool2d
+    kernel_size: 2
+  - !@torch.nn.Conv2d
+    in_channels: 32
+    out_channels: 64
+    kernel_size: 3
+    padding: 1
+  - !@torch.nn.ReLU
+  - !@torch.nn.MaxPool2d
+    kernel_size: 2
+  - !@torch.nn.Flatten
+  - !@torch.nn.Linear
+    in_features: 3136  # 64 * 7 * 7 
+    out_features: 128
+  - !@torch.nn.ReLU
+  - !@torch.nn.Dropout
+    p: 0.5
+  - !@torch.nn.Linear
+    in_features: 128
+    out_features: 10
+
+# Loss and optimizer
+criterion: !@torch.nn.CrossEntropyLoss
+optimizer: !@torch.optim.Adam
+  params: !@pyamlo.call
+    calling: ${model.parameters}
+  lr: 0.001
+
+# Device
+device: !@torch.device
+  type: "cpu"
+
+# Move model to device  
+setup: !@pyamlo.call
+  calling: ${model.to}
+  device: ${device}
+
+# Create Ignite trainer and evaluator
+trainer: !@ignite.engine.create_supervised_trainer
+  model: ${model}
+  optimizer: ${optimizer}
+  loss_fn: ${criterion}
+  device: ${device}
+
+evaluator: !@ignite.engine.create_supervised_evaluator
+  model: ${model}
+  metrics:
+    accuracy: !@ignite.metrics.Accuracy
+    loss: !@ignite.metrics.Loss
+      loss_fn: ${criterion}
+  device: ${device}
+
+# Progress bar
+pbar: !@ignite.handlers.ProgressBar
+  persist: true
+
+# Attach progress bar
+attach_pbar: !@pyamlo.call
+  calling: ${pbar.attach}
+  engine: ${trainer}
+
+# Start training for 2 epochs
+train_result: !@pyamlo.call
+  calling: ${trainer.run}
+  data: ${train_loader}
+  max_epochs: 1
+
+# Print completion message
+completion_msg: !@print "Training completed!"
+
+# Run final evaluation
+eval_result: !@pyamlo.call
+  calling: ${evaluator.run}
+  data: ${val_loader}
+
+results_msg: !@print "Evaluation completed! ${evaluator.state.metrics}"

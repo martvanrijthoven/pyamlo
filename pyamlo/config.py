@@ -2,6 +2,7 @@
 
 import getpass
 import platform
+from pprint import pprint
 import socket
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
@@ -99,7 +100,6 @@ def load_config(
 
     if all_overrides:
         config = process_cli(config, all_overrides)
-
     return Resolver().resolve(config)
 
 

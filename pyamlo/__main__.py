@@ -32,7 +32,7 @@ def main():
 
         # Load config with CLI overrides
         config = load_config(config_files, overrides=override_args)
-        pprint(config)
+        pprint(config, sort_dicts=False)
         return 0
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)

@@ -1,0 +1,19 @@
+# train configuration - includes data and model configs, defines trainer and starts training
+# Run with: PYTHONPATH=. python -m pyamlo main.yml
+
+# Include data and model configurations
+data: !include mnist.yml
+model: !include mobilenet.yml
+
+# Trainer
+trainer: !@lightning.pytorch.Trainer
+  max_epochs: 1
+  accelerator: "auto"
+  devices: 1
+
+# Start training directly from config!
+train: !@pyamlo.call
+  calling: ${trainer.fit}
+  model: ${model.lightning_model}
+  train_dataloaders: ${data.train_loader}
+  val_dataloaders: ${data.val_loader}

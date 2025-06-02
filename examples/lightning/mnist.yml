@@ -1,0 +1,34 @@
+# Data configuration - transforms, datasets, and dataloaders
+# Run with: PYTHONPATH=. python -m pyamlo main.yml
+
+# Data transforms
+train_transform: !@torchvision.transforms.Compose
+  transforms:
+    - !@torchvision.transforms.ToTensor
+    - !@torchvision.transforms.Normalize
+      mean: [0.1307]
+      std: [0.3081]
+
+# Datasets
+train_dataset: !@torchvision.datasets.MNIST
+  root: "./data"
+  train: true
+  download: true
+  transform: ${train_transform}
+
+val_dataset: !@torchvision.datasets.MNIST
+  root: "./data"
+  train: false
+  download: true
+  transform: ${train_transform}
+
+# DataLoaders
+train_loader: !@torch.utils.data.DataLoader
+  dataset: ${train_dataset}
+  batch_size: 64
+  shuffle: true
+
+val_loader: !@torch.utils.data.DataLoader
+  dataset: ${val_dataset}
+  batch_size: 64
+  shuffle: false
