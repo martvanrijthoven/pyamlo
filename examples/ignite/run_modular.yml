@@ -3,11 +3,11 @@
 
 # Import data and model configurations
 include!:
-  - device.yml 
-  - data.yml
-  - model.yml
-  - trainer.yml
-  - evaluator.yml
+  - ./devices/auto.yml 
+  - ./datasets/mnist.yml
+  - ./models/cnn.yml
+  - ./trainers/supervised.yml
+  - ./evaluators/supervised.yml
 
 epochs: 1
 

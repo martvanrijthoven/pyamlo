@@ -15,14 +15,19 @@ The PyTorch Ignite example showcases how PYAMLO can manage complex machine learn
 
 ```
 examples/ignite/
-└── data/              # MNIST dataset (auto-downloaded)
-├── data.yml           # Data pipeline configuration
-├── device.yml         # Device detection and configuration
-├── evaluator.yml      # Evaluation engine and metrics
-├── model.yml          # Model architecture configuration
-├── run_modular.yml    # Modular configuration
-├── run_monolithic.yml # Monolithic configuration
-├── trainer.yml        # Training engine and optimizer
+├── data/               # MNIST dataset (auto-downloaded)
+├── datasets/
+│   └── mnist.yml       # Data pipeline configuration
+├── devices/
+│   └── auto.yml        # Device detection and configuration
+├── evaluators/
+│   └── supervised.yml  # Evaluation engine and metrics
+├── models/
+│   └── cnn.yml         # Model architecture configuration
+├── trainers/
+│   └── supervised.yml  # Training engine and optimizer
+├── run_modular.yml     # Modular configuration
+└── run_monolithic.yml  # Monolithic configuration
 ```
 
 ## Quick Start
@@ -72,11 +77,17 @@ The monolithic configuration demonstrates a complete training pipeline in a sing
 - Learning how the components work together
 - Small projects with minimal configuration complexity
 
-### Modular Configuration (6-file structure)
+### Modular Configuration (organized by directories)
 
-The modular approach splits the configuration into six focused files:
+The modular approach organizes configuration into logical directories with focused files, providing several advantages:
 
-#### 1. Device Configuration (`device.yml`)
+- **Better Organization**: Related configurations are grouped together (all models in `models/`, all datasets in `datasets/`)
+- **Easier Maintenance**: Changes to model architecture only require editing files in `models/`
+- **Reusability**: Components can be easily shared across different experiments
+- **Team Collaboration**: Multiple team members can work on different components simultaneously
+- **Scalability**: Easy to add new models, datasets, or training strategies without cluttering
+
+#### 1. Device Configuration (`devices/auto.yml`)
 
 Automatically detects and configures the appropriate device:
 
@@ -87,8 +98,7 @@ device: !@torch.device
 device_msg: !@print "Using device: ${device.type}"
 ```
 
-
-#### 2. Data Configuration (`data.yml`)
+#### 2. Data Configuration (`datasets/mnist.yml`)
 
 Defines the complete data pipeline:
 
@@ -116,9 +126,9 @@ train_loader: !@torch.utils.data.DataLoader
 ```
 
 
-#### 3. Model Configuration (`model.yml`)
+#### 3. Model Configuration (`models/cnn.yml`)
 
-Defines the CNN architecture with automatic device placement:
+Defines the CNN architecture:
 
 ```yaml
 model: !@torch.nn.Sequential
@@ -131,15 +141,9 @@ model: !@torch.nn.Sequential
   - !@torch.nn.MaxPool2d
     kernel_size: 2
   # ... more layers
-
-# Move model to device automatically
-_model_setup: !@pyamlo.call
-  calling: ${model.to}
-  device: ${device}
 ```
 
-
-#### 4. Trainer Configuration (`trainer.yml`)
+#### 4. Trainer Configuration (`trainers/supervised.yml`)
 
 Sets up training components and progress tracking:
 
@@ -164,42 +168,55 @@ attach_pbar: !@pyamlo.call
   engine: ${trainer}
 ```
 
-#### 5. Evaluator Configuration (`evaluator.yml`)
+#### 5. Evaluator Configuration (`evaluators/supervised.yml`)
 
 Defines evaluation metrics and testing:
 
 ```yaml
+metrics:
+  accuracy: !@ignite.metrics.Accuracy
+  loss: !@ignite.metrics.Loss
+    loss_fn: ${criterion}
+  precision: !@ignite.metrics.Precision
+  recall: !@ignite.metrics.Recall
+
 evaluator: !@ignite.engine.create_supervised_evaluator
   model: ${model}
-  metrics:
-    accuracy: !@ignite.metrics.Accuracy
-    loss: !@ignite.metrics.Loss
-      loss_fn: ${criterion}
+  metrics: ${metrics}
   device: ${device}
 ```
 
-
-#### 6. Run Configuration (`run_modulular.yml`)
+#### 6. Run Configuration (`run_modular.yml`)
 
 Main orchestration file that coordinates all components:
 
 ```yaml
 # Import all configurations
 include!:
-  - device.yml 
-  - data.yml
-  - model.yml
-  - trainer.yml
-  - evaluator.yml
+  - ./devices/auto.yml 
+  - ./datasets/mnist.yml
+  - ./models/cnn.yml
+  - ./trainers/supervised.yml
+  - ./evaluators/supervised.yml
+
+epochs: 1
 
 # Start training for 1 epoch
 train_result: !@pyamlo.call
   calling: ${trainer.run}
   data: ${train_loader}
-  max_epochs: 1
+  max_epochs: ${epochs}
 
 # Print completion message
 completion_msg: !@print "Training completed!"
+
+# Run final evaluation
+eval_result: !@pyamlo.call
+  calling: ${evaluator.run}
+  data: ${val_loader}
+
+results_msg: !@print "Evaluation completed! ${evaluator.state.metrics}"
+```
 
 # Run final evaluation
 eval_result: !@pyamlo.call
@@ -237,7 +254,7 @@ The CNN model consists of:
 
 ### Modify Training Parameters
 
-Edit `trainer.yml` to change optimization settings:
+Edit `trainers/supervised.yml` to change optimization settings:
 
 ```yaml
 optimizer: !@torch.optim.SGD
@@ -246,18 +263,20 @@ optimizer: !@torch.optim.SGD
   momentum: 0.9
 ```
 
-Edit `run.yml` to change training duration:
+Edit `run_modular.yml` to change training duration:
 
 ```yaml
+epochs: 5  # Train for more epochs
+
 train_result: !@pyamlo.call
   calling: ${trainer.run}
   data: ${train_loader}
-  max_epochs: 5  # Train for more epochs
+  max_epochs: ${epochs}
 ```
 
 ### Specific Devices
 
-Edit `device.yml` to set specific device:
+Edit `devices/auto.yml` to set specific device:
 
 ```yaml
 # For CPU only
@@ -275,19 +294,23 @@ device: !@torch.device
 
 ### Add More Metrics
 
-Extend the evaluator in `evaluator.yml`:
+Extend the evaluator in `evaluators/supervised.yml`:
 
 ```yaml
+metrics:
+  accuracy: !@ignite.metrics.Accuracy
+  loss: !@ignite.metrics.Loss
+    loss_fn: ${criterion}
+  precision: !@ignite.metrics.Precision
+  recall: !@ignite.metrics.Recall
+  f1: !@ignite.metrics.Fbeta
+    beta: 1
+
 evaluator: !@ignite.engine.create_supervised_evaluator
   model: ${model}
-  metrics:
-    accuracy: !@ignite.metrics.Accuracy
-    loss: !@ignite.metrics.Loss
-      loss_fn: ${criterion}
-    precision: !@ignite.metrics.Precision
-    recall: !@ignite.metrics.Recall
-    f1: !@ignite.metrics.Fbeta
-      beta: 1
+  metrics: ${metrics}
+  device: ${device}
+```
   device: ${device}
 ```
 
@@ -296,12 +319,12 @@ evaluator: !@ignite.engine.create_supervised_evaluator
 Override configuration values from command line:
 
 ```bash
-python -m pyamlo run.yml pyamlo.lr=0.01 pyamlo.max_epochs=5
+python -m pyamlo run_modular.yml pyamlo.lr=0.01 pyamlo.epochs=5
 ```
 
 ### Data Augmentation
 
-Enhance the data pipeline in `data.yml`:
+Enhance the data pipeline in `datasets/mnist.yml`:
 
 ```yaml
 train_transform: !@torchvision.transforms.Compose
@@ -324,7 +347,7 @@ train_transform: !@torchvision.transforms.Compose
 Use PYAMLO's expression system for conditional behavior:
 
 ```yaml
-# In device.yml
+# In devices/auto.yml
 is_cuda_available: !@torch.cuda.is_available
 device_type: "${'cuda' if is_cuda_available else 'cpu'}"
 batch_size: "${128 if is_cuda_available else 32}"  # Larger batch on GPU
