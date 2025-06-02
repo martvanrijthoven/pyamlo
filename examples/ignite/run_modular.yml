@@ -1,7 +1,4 @@
-# Training configuration that imports data and model configs
-# Run with: python -m pyamlo train.yml
-
-# Import data and model configurations
+# include data and model configurations
 include!:
   - ./devices/auto.yml 
   - ./datasets/mnist.yml

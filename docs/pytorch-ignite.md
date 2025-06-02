@@ -190,7 +190,7 @@ evaluator: !@ignite.engine.create_supervised_evaluator
 Main orchestration file that coordinates all components:
 
 ```yaml
-# Import all configurations
+# include data and model configurations
 include!:
   - ./devices/auto.yml 
   - ./datasets/mnist.yml
@@ -198,23 +198,25 @@ include!:
   - ./trainers/supervised.yml
   - ./evaluators/supervised.yml
 
-epochs: 1
+model_msg: !@print Model:\n ${model}
 
 # Start training for 1 epoch
+epochs: 1
 train_result: !@pyamlo.call
   calling: ${trainer.run}
+  start_msg: "Starting training..."
+  finish_msg: "Training completed!"
   data: ${train_loader}
   max_epochs: ${epochs}
 
-# Print completion message
-completion_msg: !@print "Training completed!"
-
-# Run final evaluation
+# Run evaluation
 eval_result: !@pyamlo.call
   calling: ${evaluator.run}
+  start_msg: "Running evaluation..."
+  finish_msg: "Evaluation completed!"
   data: ${val_loader}
 
-results_msg: !@print "Evaluation completed! ${evaluator.state.metrics}"
+results_msg: !@pprint.pprint ${evaluator.state.metrics}
 ```
 
 ## Model Architecture
@@ -443,6 +445,5 @@ This example demonstrates the power of PYAMLO for ML configuration management. C
 - **Other Datasets**: Adapt the configuration for CIFAR-10, ImageNet, etc.
 - **Advanced Training**: Add learning rate scheduling, early stopping, checkpointing
 - **Hyperparameter Tuning**: Use PYAMLO with hyperparameter optimization libraries
-- **Production Deployment**: Create configurations for different deployment environments
 
 The modular approach scales well to complex ML pipelines while maintaining readability and maintainability.
