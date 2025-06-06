@@ -1,23 +1,43 @@
 # Best Practices
 
-## Avoiding Common Pitfalls
-- Do not use `!patch` unless you want to fully replace a dictionary.
-- Use `!extend` only on lists.
-- Use `${...}` for referencing both config values and object attributes.
+## General Guidelines
+- Use `!patch` only when you need to completely replace a dictionary
+- Use `!extend` only on lists to append items
+- Always provide defaults for non-critical environment variables
+- Use `${...}` for referencing both config values and object attributes
 
-## Using Environment Variables
-- Always provide a default for non-critical env vars:
-  ```yaml
-  db_url: !env {var: DATABASE_URL, default: "sqlite:///default.db"}
-  ```
+## Environment Variables
+Always provide meaningful defaults:
+```yaml
+db_url: !env {var: DATABASE_URL, default: "sqlite:///default.db"}
+log_level: !env {var: LOG_LEVEL, default: "INFO"}
+```
 
-## CLI Overrides Best Practices
+## CLI Overrides
+
+### Namespace Your Arguments
+Always use the `pyamlo.` prefix to avoid conflicts:
+```bash
+# Good
+python script.py pyamlo.app.name=MyApp --verbose
+
+# Bad - will be ignored
+python script.py app.name=MyApp --verbose
+```
+
+### Use Proper YAML Syntax
+Quote complex values and use valid YAML:
+```bash
+# Good
+python script.py 'pyamlo.items=!extend [4,5]' 'pyamlo.settings=!patch {"debug": true}'
+
+# Bad - invalid syntax
+python script.py pyamlo.items=!extend[4,5] pyamlo.settings=!patch{debug:true}
+```
 
 ### Programmatic vs Command Line Usage
 
-PYAMLO supports overrides in two ways:
-
-**Programmatic overrides** (via `overrides` parameter):
+**Programmatic overrides:**
 ```python
 from pyamlo import load_config
 
@@ -37,37 +57,15 @@ config = load_config("config.yml",
 )
 ```
 
-**Command line usage**:
+**Command line usage:**
 ```bash
 python -m pyamlo config.yml pyamlo.app.debug=true pyamlo.database.host=localhost
 ```
 
-### Namespace Your Arguments
-- Always use the `pyamlo.` prefix for PYAMLO config overrides
-- This avoids conflicts with other CLI arguments
-```bash
-# Good
-python script.py pyamlo.app.name=MyApp --verbose
-
-# Bad - no pyamlo prefix, will be ignored
-python script.py app.name=MyApp --verbose
-```
-
-### Use Proper YAML Syntax in Values
-- Use single quotes for values containing spaces or special characters
-- Use valid YAML for !extend and !patch values
-```bash
-# Good
-python script.py 'pyamlo.items=!extend [4,5]' 'pyamlo.settings=!patch {"debug": true}'
-
-# Bad - invalid YAML syntax
-python script.py pyamlo.items=!extend[4,5] pyamlo.settings=!patch{debug:true}
-```
-
-### Order of Precedence
-1. Included file values (!include)
+### Processing Order
+1. File includes (`!include` directives)
 2. Config file values (loaded from YAML files)
-3. Manual overrides (provided via `overrides` parameter)
-4. CLI overrides (when `use_cli=True`, read from sys.argv)
+3. Manual overrides (via `overrides` parameter)
+4. CLI overrides (when `use_cli=True`)
 
-When both manual overrides and CLI overrides are used together, they are combined with manual overrides processed first, then CLI overrides applied on top.
+Manual and CLI overrides can be combined, with CLI overrides taking final precedence.
