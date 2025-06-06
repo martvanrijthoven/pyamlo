@@ -17,13 +17,13 @@ def test_include_at_basic_functionality(tmp_path):
     
     # Create a file to include
     included_content = """
-cache:
-  enabled: true
-  ttl: 3600
-
-monitoring:
-  enabled: true
-  port: 9090
+_middleware:
+  cache:
+    enabled: true
+    ttl: 3600
+  monitoring:
+    enabled: true
+    port: 9090
 """
     included_file = tmp_path / "middleware.yml"
     included_file.write_text(included_content.strip())
@@ -48,22 +48,18 @@ database:
     
     # Verify the content is included at the right position
     assert "app" in config
-    assert "cache" in config  # From included file
-    assert "monitoring" in config  # From included file
+    assert "_middleware" in config  # From included file
     assert "database" in config
-    
-    # Verify the _middleware key is not present (it should be consumed)
-    assert "_middleware" not in config
     
     # Verify content
     assert config["app"]["name"] == "MyApp"
-    assert config["cache"]["enabled"] is True
-    assert config["monitoring"]["port"] == 9090
+    assert config["_middleware"]["cache"]["enabled"] is True
+    assert config["_middleware"]["monitoring"]["port"] == 9090
     assert config["database"]["host"] == "localhost"
     
     # Verify key order is preserved
     keys = list(config.keys())
-    expected_order = ["app", "cache", "monitoring", "database"]
+    expected_order = ["app", "_middleware", "database"]
     assert keys == expected_order
 
 
@@ -76,7 +72,7 @@ def test_include_at_with_relative_paths(tmp_path):
     
     # Create included file in subdirectory
     included_content = """
-shared:
+_shared_config:
   debug: true
   log_level: INFO
 """
@@ -98,9 +94,8 @@ database:
     
     config = load_config(str(main_file))
     
-    assert "shared" in config
-    assert config["shared"]["debug"] is True
-    assert "_shared_config" not in config
+    assert "_shared_config" in config
+    assert config["_shared_config"]["debug"] is True
 
 
 def test_include_at_file_not_found(tmp_path):
@@ -127,7 +122,7 @@ def test_include_at_multiple_positions(tmp_path):
     
     # Create first included file
     first_content = """
-cache:
+_cache_config:
   type: redis
   host: localhost
 """
@@ -136,7 +131,7 @@ cache:
     
     # Create second included file  
     second_content = """
-logging:
+_logging_config:
   level: INFO
   handlers: [console, file]
 """
@@ -165,18 +160,14 @@ monitoring:
     
     # Verify all content is present
     assert "app" in config
-    assert "cache" in config
+    assert "_cache_config" in config
     assert "database" in config
-    assert "logging" in config
+    assert "_logging_config" in config
     assert "monitoring" in config
-    
-    # Verify include keys are not present
-    assert "_cache_config" not in config
-    assert "_logging_config" not in config
     
     # Verify correct order
     keys = list(config.keys())
-    expected_order = ["app", "cache", "database", "logging", "monitoring"]
+    expected_order = ["app", "_cache_config", "database", "_logging_config", "monitoring"]
     assert keys == expected_order
 
 
@@ -214,7 +205,7 @@ def test_include_at_with_string_io():
         
         # Create included file
         included_content = """
-middleware:
+_middleware:
   cors: true
   timeout: 30
 """
@@ -235,9 +226,8 @@ database:
         # Test with StringIO
         config = load_config(StringIO(main_content))
         
-        assert "middleware" in config
-        assert config["middleware"]["cors"] is True
-        assert "_middleware" not in config
+        assert "_middleware" in config
+        assert config["_middleware"]["cors"] is True
 
 
 def test_include_at_with_variable_interpolation(tmp_path):
@@ -245,7 +235,7 @@ def test_include_at_with_variable_interpolation(tmp_path):
     
     # Create included file
     included_content = """
-database:
+_db_config:
   host: ${env}_db.example.com
   port: 5432
   ssl: true
@@ -270,10 +260,9 @@ monitoring:
     config = load_config(str(main_file))
     
     # Verify content is included and variables are interpolated
-    assert "database" in config
-    assert config["database"]["host"] == "prod_db.example.com"
-    assert config["database"]["ssl"] is True
-    assert "_db_config" not in config
+    assert "_db_config" in config
+    assert config["_db_config"]["host"] == "prod_db.example.com"
+    assert config["_db_config"]["ssl"] is True
 
 
 def test_include_at_with_nested_variable_interpolation(tmp_path):
@@ -281,7 +270,7 @@ def test_include_at_with_nested_variable_interpolation(tmp_path):
     
     # Create included file
     included_content = """
-api:
+_api_settings:
   base_url: https://${subdomain}.${domain}/api
   version: v1
 """
@@ -305,9 +294,8 @@ app:
     config = load_config(str(main_file))
     
     # Verify nested interpolation works
-    assert "api" in config
-    assert config["api"]["base_url"] == "https://api.example.com/api"
-    assert "_api_settings" not in config
+    assert "_api_settings" in config
+    assert config["_api_settings"]["base_url"] == "https://api.example.com/api"
 
 
 def test_include_at_with_missing_variable(tmp_path):
@@ -340,7 +328,7 @@ def test_include_at_with_complex_path_interpolation(tmp_path):
     
     # Create included file in nested directory
     included_content = """
-redis:
+_cache_config:
   host: prod-redis.internal
   port: 6379
   cluster: true
@@ -367,10 +355,9 @@ monitoring:
     config = load_config(str(main_file))
     
     # Verify complex path interpolation works
-    assert "redis" in config
-    assert config["redis"]["host"] == "prod-redis.internal"
-    assert config["redis"]["cluster"] is True
-    assert "_cache_config" not in config
+    assert "_cache_config" in config
+    assert config["_cache_config"]["host"] == "prod-redis.internal"
+    assert config["_cache_config"]["cluster"] is True
 
 
 def test_include_at_variable_interpolation_within_included_files(tmp_path):
@@ -378,13 +365,13 @@ def test_include_at_variable_interpolation_within_included_files(tmp_path):
     
     # Create included file with variables
     included_content = """
-service:
-  name: ${app_name}-service
-  port: ${service_port}
-  replicas: 3
-
-database:
-  url: postgresql://${db_user}:${db_pass}@${db_host}:5432/${db_name}
+_service_config:
+  service:
+    name: ${app_name}-service
+    port: ${service_port}
+    replicas: 3
+  database:
+    url: postgresql://${db_user}:${db_pass}@${db_host}:5432/${db_name}
 """
     included_file = tmp_path / "service.yml"
     included_file.write_text(included_content.strip())
@@ -409,11 +396,10 @@ monitoring:
     config = load_config(str(main_file))
     
     # Verify variables in included file are interpolated
-    assert "service" in config
-    assert config["service"]["name"] == "myapp-service"
-    assert config["service"]["port"] == 8080
-    assert config["database"]["url"] == "postgresql://admin:secret123@db.internal:5432/myapp_prod"
-    assert "_service_config" not in config
+    assert "_service_config" in config
+    assert config["_service_config"]["service"]["name"] == "myapp-service"
+    assert config["_service_config"]["service"]["port"] == 8080
+    assert config["_service_config"]["database"]["url"] == "postgresql://admin:secret123@db.internal:5432/myapp_prod"
 
 
 def test_include_at_with_recursive_includes(tmp_path):
@@ -421,7 +407,7 @@ def test_include_at_with_recursive_includes(tmp_path):
     
     # Create the deepest included file
     deep_content = """
-metrics:
+_metrics:
   prometheus: true
   port: 9090
 """
@@ -460,17 +446,14 @@ database:
     # Verify all levels of inclusion work
     assert "app" in config
     assert "middleware" in config
-    assert "metrics" in config["middleware"]  # From include_at within included file
+    assert "_metrics" in config["middleware"]  # From include_at within included file
     assert "middleware" in config["middleware"]  # Original middleware content
     assert "security" in config["middleware"]
     assert "database" in config
     
-    # Verify include_at key is consumed within the middleware section
-    assert "_metrics" not in config["middleware"]
-    
     # Verify content
     assert config["middleware"]["middleware"]["cors"] is True
-    assert config["middleware"]["metrics"]["prometheus"] is True
+    assert config["middleware"]["_metrics"]["prometheus"] is True
     assert config["middleware"]["security"]["auth_required"] is True
 
 
@@ -508,9 +491,9 @@ def test_include_at_preserves_order_with_mixed_content(tmp_path):
     """Test that !include_at preserves order when mixed with regular content."""
     
     # Create multiple include files
-    first_content = "first:\n  value: 1"
-    second_content = "second:\n  value: 2"
-    third_content = "third:\n  value: 3"
+    first_content = "_first:\n  value: 1"
+    second_content = "_second:\n  value: 2"
+    third_content = "_third:\n  value: 3"
     
     first_file = tmp_path / "first.yml"
     second_file = tmp_path / "second.yml"  
@@ -547,17 +530,13 @@ end:
     
     # Verify order is preserved
     keys = list(config.keys())
-    expected_order = ["start", "first", "middle1", "second", "middle2", "third", "end"]
+    expected_order = ["start", "_first", "middle1", "_second", "middle2", "_third", "end"]
     assert keys == expected_order
     
-    # Verify include keys are not present
-    for key in ["_first", "_second", "_third"]:
-        assert key not in config
-    
     # Verify content
-    assert config["first"]["value"] == 1
-    assert config["second"]["value"] == 2
-    assert config["third"]["value"] == 3
+    assert config["_first"]["value"] == 1
+    assert config["_second"]["value"] == 2
+    assert config["_third"]["value"] == 3
     assert config["middle1"]["regular"] == "content1"
 
 
@@ -626,3 +605,231 @@ _config: !include_at ""
     
     with pytest.raises(TagError, match=r"!include_at requires a non-empty file path.*line \d+"):
         load_config(StringIO(yaml_content))
+
+
+def test_include_at_key_validation_success(tmp_path):
+    """Test that !include_at validates keys correctly when they match expectations."""
+    
+    # Create included file with expected keys only
+    included_content = """
+train_loader:
+  batch_size: 64
+  shuffle: true
+
+val_loader:
+  batch_size: 32
+  shuffle: false
+
+# Helper key starting with underscore is allowed
+_shared_config:
+  timeout: 30
+"""
+    included_file = tmp_path / "loaders.yml"
+    included_file.write_text(included_content.strip())
+    
+    # Create main config with expected keys specified
+    main_content = f"""
+app:
+  name: ValidationApp
+
+train_loader, val_loader: !include_at {included_file}
+
+model:
+  type: cnn
+"""
+    main_file = tmp_path / "main.yml"
+    main_file.write_text(main_content.strip())
+    
+    # Should succeed without error
+    config = load_config(str(main_file))
+    
+    assert "train_loader" in config
+    assert "val_loader" in config
+    assert config["train_loader"]["batch_size"] == 64
+    assert config["val_loader"]["batch_size"] == 32
+    assert "_shared_config" in config  # Underscore keys are included
+
+
+def test_include_at_key_validation_failure(tmp_path):
+    """Test that !include_at raises error when included file has unexpected keys."""
+    
+    # Create included file with unexpected key
+    included_content = """
+train_loader:
+  batch_size: 64
+  shuffle: true
+
+val_loader:
+  batch_size: 32
+  shuffle: false
+
+# This key is not expected and should cause validation error
+unexpected_key:
+  value: "should cause error"
+
+# Helper key starting with underscore is allowed
+_helper:
+  config: value  
+"""
+    included_file = tmp_path / "loaders.yml"
+    included_file.write_text(included_content.strip())
+    
+    # Create main config with expected keys specified
+    main_content = f"""
+app:
+  name: ValidationApp
+
+train_loader, val_loader: !include_at {included_file}
+
+model:
+  type: cnn
+"""
+    main_file = tmp_path / "main.yml"
+    main_file.write_text(main_content.strip())
+    
+    # Should raise IncludeError about unexpected key
+    with pytest.raises(IncludeError, match="unexpected_key.*Expected keys.*train_loader.*val_loader"):
+        load_config(str(main_file))
+
+
+def test_include_at_key_validation_missing_expected(tmp_path):
+    """Test that !include_at handles missing expected keys gracefully."""
+    
+    # Create included file missing one expected key
+    included_content = """
+train_loader:
+  batch_size: 64
+  shuffle: true
+
+# val_loader is missing but should be allowed (not strict requirement)
+
+_helper:
+  config: value  
+"""
+    included_file = tmp_path / "loaders.yml"
+    included_file.write_text(included_content.strip())
+    
+    # Create main config with expected keys specified
+    main_content = f"""
+app:
+  name: ValidationApp
+
+train_loader, val_loader: !include_at {included_file}
+
+model:
+  type: cnn
+"""
+    main_file = tmp_path / "main.yml"
+    main_file.write_text(main_content.strip())
+    
+    # Should succeed (missing keys are allowed, only extra unexpected keys cause errors)
+    config = load_config(str(main_file))
+    
+    assert "train_loader" in config
+    assert "val_loader" not in config  # Missing from included file, so not in result
+
+
+def test_include_at_single_key_validation(tmp_path):
+    """Test that !include_at validates single key without comma syntax."""
+    
+    # Create included file with matching key
+    included_content = """
+config:
+  database_url: postgres://localhost
+  timeout: 30
+
+_helper:
+  internal: true
+"""
+    included_file = tmp_path / "config.yml"
+    included_file.write_text(included_content.strip())
+    
+    # Create main config using single key syntax
+    main_content = f"""
+app:
+  name: SingleKeyApp
+
+config: !include_at {included_file}
+
+model:
+  type: cnn
+"""
+    main_file = tmp_path / "main.yml"
+    main_file.write_text(main_content.strip())
+    
+    # Should succeed
+    config = load_config(str(main_file))
+    
+    assert "config" in config
+    assert config["config"]["database_url"] == "postgres://localhost"
+    assert "_helper" in config
+
+
+def test_include_at_single_key_validation_failure(tmp_path):
+    """Test that !include_at validates single key and fails with wrong key."""
+    
+    # Create included file with wrong key
+    included_content = """
+wrong_key:
+  value: 1
+
+_helper:
+  internal: true
+"""
+    included_file = tmp_path / "config.yml"
+    included_file.write_text(included_content.strip())
+    
+    # Create main config expecting "config" but file contains "wrong_key"
+    main_content = f"""
+app:
+  name: SingleKeyApp
+
+config: !include_at {included_file}
+
+model:
+  type: cnn
+"""
+    main_file = tmp_path / "main.yml"
+    main_file.write_text(main_content.strip())
+    
+    # Should fail validation
+    with pytest.raises(IncludeError, match="wrong_key.*Expected keys.*config"):
+        load_config(str(main_file))
+
+
+def test_include_at_single_key_validation_multiple_keys_failure(tmp_path):
+    """Test that !include_at single key validation fails when file has multiple unexpected keys."""
+    
+    # Create included file with multiple keys but only one expected
+    included_content = """
+config:
+  database_url: postgres://localhost
+
+unexpected_key:
+  value: 1
+
+another_unexpected:
+  value: 2
+
+_helper:
+  internal: true
+"""
+    included_file = tmp_path / "config.yml"
+    included_file.write_text(included_content.strip())
+    
+    # Create main config expecting only "config"
+    main_content = f"""
+app:
+  name: SingleKeyApp
+
+config: !include_at {included_file}
+
+model:
+  type: cnn
+"""
+    main_file = tmp_path / "main.yml"
+    main_file.write_text(main_content.strip())
+    
+    # Should fail validation
+    with pytest.raises(IncludeError, match="another_unexpected.*unexpected_key.*Expected keys.*config"):
+        load_config(str(main_file))

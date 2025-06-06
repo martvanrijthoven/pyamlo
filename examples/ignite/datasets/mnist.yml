@@ -1,20 +1,21 @@
 
-_transform: !@torchvision.transforms.Compose
-  transforms:
-    - !@torchvision.transforms.ToTensor
-    - !@torchvision.transforms.Normalize
-      mean: [0.1307]
-      std: [0.3081]
+_mnist:
+  _transform: !@torchvision.transforms.Compose
+    transforms:
+      - !@torchvision.transforms.ToTensor
+      - !@torchvision.transforms.Normalize
+        mean: [0.1307]
+        std: [0.3081]
 
 # Datasets
 train_dataset: !@torchvision.datasets.MNIST
   root: "./data"
   train: true
   download: true
-  transform: ${_transform}
+  transform: ${_mnist._transform}
 
 val_dataset: !@torchvision.datasets.MNIST
   root: "./data" 
   train: false
   download: true
-  transform: ${_transform}
+  transform: ${_mnist._transform}

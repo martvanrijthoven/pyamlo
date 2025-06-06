@@ -49,6 +49,19 @@ database:
   host: localhost
 ```
 
+### Key Validation
+`!include_at` validates that included files only contain expected keys (mimicking unpacking behavior). This prevents configuration errors from unexpected content:
+
+```yaml
+# Single key syntax - file must contain 'config' key (and optional underscore-prefixed keys)
+config: !include_at config.yml
+
+# Multiple key syntax - file must contain only 'train_loader', 'val_loader' keys
+train_loader, val_loader: !include_at loaders.yml
+```
+
+Keys starting with underscore (e.g., `_helper`) are always allowed as private/helper keys.
+
 ### Variable Interpolation in Include Paths
 Use variable interpolation in file paths for dynamic includes:
 

@@ -92,6 +92,16 @@ def process_includes(raw: dict[str, Any], base_path: str | None = None) -> dict[
             path = _resolve_path(value.path, base_path, raw)
             included = _load_file(path)
             included = process_includes(included, path)  # Recursive processing
+            
+            # Always validate keys for !include_at
+            if ',' in key:
+                # Comma syntax: validate multiple expected keys
+                expected_keys = {k.strip() for k in key.split(',')}
+            else:
+                # Single key syntax: validate only that key
+                expected_keys = {key}
+            _validate_include_at_keys(included, expected_keys, path)
+            
             # Add included content directly to result (replaces the key)
             deep_merge(result, included)
         else:
@@ -100,6 +110,25 @@ def process_includes(raw: dict[str, Any], base_path: str | None = None) -> dict[
     
     # Merge traditional includes first, then positional content
     return deep_merge(merged, result)
+
+
+def _validate_include_at_keys(included: dict[str, Any], expected_keys: set[str], file_path: str) -> None:
+    """Validate that included file only contains expected keys or keys starting with underscore."""
+    included_keys = set(included.keys())
+    
+    # Keys starting with underscore are always allowed (helper/private keys)
+    allowed_keys = expected_keys | {k for k in included_keys if k.startswith('_')}
+    
+    # Find unexpected keys (keys that are not expected and don't start with underscore)
+    unexpected_keys = included_keys - allowed_keys
+    
+    if unexpected_keys:
+        expected_list = ', '.join(sorted(expected_keys))
+        unexpected_list = ', '.join(sorted(unexpected_keys))
+        raise IncludeError(
+            f"File '{file_path}' contains unexpected keys: {unexpected_list}. "
+            f"Expected keys: {expected_list} (plus any keys starting with underscore)"
+        )
 
 
 def _load_traditional_include(entry: Any, base_path: str | None = None) -> dict[str, Any]:

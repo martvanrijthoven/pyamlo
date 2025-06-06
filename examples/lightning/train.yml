@@ -1,8 +1,29 @@
 # Run with: PYTHONPATH=. python -m pyamlo main.yml
 
 # Include data and model configurations
-data: !include mnist.yml
-model: !include mobilenet.yml
+dataset: mnist
+model_name: mobilenet
+
+model: !include_at ${model_name}.yml
+train_dataset, val_dataset: !include_at ${dataset}.yml
+
+
+# DataLoaders
+train_loader: !@torch.utils.data.DataLoader
+  dataset: ${train_dataset}
+  batch_size: 64
+  shuffle: true
+
+val_loader: !@torch.utils.data.DataLoader
+  dataset: ${val_dataset}
+  batch_size: 64
+  shuffle: false
+
+
+
+lightning_model: !@simple_cnn.LightningModel
+  model: ${model}
+  lr: 0.001
 
 # Trainer
 trainer: !@lightning.pytorch.Trainer
@@ -13,6 +34,6 @@ trainer: !@lightning.pytorch.Trainer
 # Start training directly from config!
 train: !@pyamlo.call
   calling: ${trainer.fit}
-  model: ${model.lightning_model}
-  train_dataloaders: ${data.train_loader}
-  val_dataloaders: ${data.val_loader}
+  model: ${lightning_model}
+  train_dataloaders: ${train_loader}
+  val_dataloaders: ${val_loader}

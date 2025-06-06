@@ -34,30 +34,33 @@ database:
 
 Where `middleware.yml` contains:
 ```yaml
-cache:
-  enabled: true
-  ttl: 3600
-
-monitoring:
-  enabled: true
-  port: 9090
+middleware:
+  cache:
+    enabled: true
+    ttl: 3600
+  monitoring:
+    enabled: true
+    port: 9090
 ```
 
-Result merges the contents at the position of `_middleware`:
+Result merges the contents at the position of `middleware`:
 ```yaml
 app:
   name: MyApp
   version: 1.0
-cache:
-  enabled: true
-  ttl: 3600
-monitoring:
-  enabled: true
-  port: 9090
+middleware:
+  cache:
+    enabled: true
+    ttl: 3600
+  monitoring:
+    enabled: true
+    port: 9090
 database:
   host: localhost
   port: 5432
 ```
+
+> **Note:** The included file must contain keys matching the assignment target (e.g., `middleware` key for `middleware: !include_at`). Keys starting with underscore are always allowed as helper keys.
 
 ### Variable Interpolation in Include Paths
 ```yaml
