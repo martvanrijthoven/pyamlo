@@ -25,13 +25,13 @@ database:
 
 Where `middleware.yml` contains:
 ```yaml
-cache:
-  enabled: true
-  ttl: 3600
-
-monitoring:
-  enabled: true
-  port: 9090
+middleware:
+  cache:
+    enabled: true
+    ttl: 3600
+  monitoring:
+    enabled: true
+    port: 9090
 ```
 
 The result merges the included content directly into the configuration:
@@ -39,24 +39,25 @@ The result merges the included content directly into the configuration:
 app:
   name: MyApp
   version: 1.0
-cache:
-  enabled: true
-  ttl: 3600
-monitoring:
-  enabled: true
-  port: 9090
+middleware:
+  cache:
+    enabled: true
+    ttl: 3600
+  monitoring:
+    enabled: true
+    port: 9090
 database:
   host: localhost
 ```
 
 ### Key Validation
-`!include_at` validates that included files only contain expected keys (mimicking unpacking behavior). This prevents configuration errors from unexpected content:
+`!include_at` validates that included files only contain expected keys. This prevents configuration errors from unexpected content:
 
 ```yaml
-# Single key syntax - file must contain 'config' key (and optional underscore-prefixed keys)
+# Single key - file must contain 'config' key
 config: !include_at config.yml
 
-# Multiple key syntax - file must contain only 'train_loader', 'val_loader' keys
+# Multiple keys - file must contain 'train_loader' and 'val_loader' keys  
 train_loader, val_loader: !include_at loaders.yml
 ```
 

@@ -60,7 +60,7 @@ database:
   port: 5432
 ```
 
-> **Note:** The included file must contain keys matching the assignment target (e.g., `middleware` key for `middleware: !include_at`). Keys starting with underscore are always allowed as helper keys.
+> **Note:** Included files must contain keys matching the assignment target. Keys starting with underscore are always allowed as helper keys.
 
 ### Variable Interpolation in Include Paths
 ```yaml
