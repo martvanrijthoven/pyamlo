@@ -7,7 +7,6 @@ edit_uri: edit/main/docs/ # Or appropriate branch/path
 nav:
   - Home: index.md
   - Features: features.md
-  - Examples: examples.md
   - PyTorch Ignite: pytorch-ignite.md
   - Best Practices: best-practices.md
 
