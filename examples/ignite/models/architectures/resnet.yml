@@ -2,7 +2,7 @@
 # Simpler and more declarative approach than EfficientNet modification
 
 # Use ResNet18 as base but create custom version for MNIST
-architecture: !@torch.nn.Sequential
+model: !@torch.nn.Sequential
   # Custom input block for MNIST (1 channel -> 64)
   - !@torch.nn.Conv2d
     in_channels: 1

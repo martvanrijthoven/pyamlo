@@ -6,7 +6,7 @@ from inspect import Parameter, signature
 from typing import Any
 
 from pyamlo.expressions import ExpressionEvaluator, is_expression
-from pyamlo.merge import load_raw, process_includes
+from pyamlo.merge import _load_file, process_includes
 from pyamlo.tags import CallSpec, ImportSpec, IncludeSpec, ResolutionError
 
 
@@ -30,7 +30,7 @@ class Resolver:
         fn = self.VAR_RE.sub(lambda m: str(self._get(m.group(1))), node.path)
         if hasattr(node, "_base_path") and node._base_path and not os.path.isabs(fn):
             fn = os.path.join(os.path.dirname(node._base_path), fn)
-        raw = load_raw(fn)
+        raw = _load_file(fn)
         merged = process_includes(raw, fn)
         return self.resolve(merged)
 

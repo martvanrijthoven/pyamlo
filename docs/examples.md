@@ -16,6 +16,60 @@ include!:
   - override.yaml
 ```
 
+## Positional Include (`!include_at`)
+Place file contents at specific positions in your configuration:
+
+```yaml
+app:
+  name: MyApp
+  version: 1.0
+
+# Include middleware config at this exact position
+middleware: !include_at middleware.yml
+
+database:
+  host: localhost
+  port: 5432
+```
+
+Where `middleware.yml` contains:
+```yaml
+cache:
+  enabled: true
+  ttl: 3600
+
+monitoring:
+  enabled: true
+  port: 9090
+```
+
+Result merges the contents at the position of `_middleware`:
+```yaml
+app:
+  name: MyApp
+  version: 1.0
+cache:
+  enabled: true
+  ttl: 3600
+monitoring:
+  enabled: true
+  port: 9090
+database:
+  host: localhost
+  port: 5432
+```
+
+### Variable Interpolation in Include Paths
+```yaml
+environment: production
+service_type: api
+
+# Dynamic path based on variables
+config: !include_at configs/${environment}/${service_type}.yml
+```
+
+This resolves to `configs/production/api.yml`.
+
 ## Environment Variable with Default
 ```yaml
 api_key: !env {var: API_KEY, default: "not-set"}

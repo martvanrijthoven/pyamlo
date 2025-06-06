@@ -8,6 +8,61 @@ PYAMLO enhances standard YAML loading with several powerful features designed to
 - Structure your configuration across multiple files using the `include!` key.
 - Files are deep-merged in order, with later files overriding earlier ones.
 
+## Positional Includes (`!include_at`)
+Include files at specific positions in your configuration, replacing the key with the file's contents.
+
+```yaml
+app:
+  name: MyApp
+  version: 1.0
+
+# Include middleware config at this exact position
+middleware: !include_at middleware.yml
+
+database:
+  host: localhost
+```
+
+Where `middleware.yml` contains:
+```yaml
+cache:
+  enabled: true
+  ttl: 3600
+
+monitoring:
+  enabled: true
+  port: 9090
+```
+
+The result merges the included content directly into the configuration:
+```yaml
+app:
+  name: MyApp
+  version: 1.0
+cache:
+  enabled: true
+  ttl: 3600
+monitoring:
+  enabled: true
+  port: 9090
+database:
+  host: localhost
+```
+
+### Variable Interpolation in Include Paths
+Use variable interpolation in file paths for dynamic includes:
+
+```yaml
+environment: production
+service_type: api
+
+# Dynamic path based on variables
+config: !include_at configs/${environment}/${service_type}.yml
+```
+
+This resolves to `configs/production/api.yml`. Variables are resolved from the current configuration context.
+
+
 
 ## Multiple Config Files
 - Load and merge multiple configuration files in a single call.

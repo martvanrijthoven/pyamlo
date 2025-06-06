@@ -2,7 +2,7 @@ import os
 from collections import UserDict, UserList
 from typing import Any, Hashable, Optional, Union
 
-from yaml import MappingNode, SafeLoader, ScalarNode, SequenceNode
+from yaml import MappingNode, UnsafeLoader, ScalarNode, SequenceNode
 
 
 class ResolutionError(Exception):
@@ -51,7 +51,16 @@ class ImportSpec:
         self.path = path
 
 
-class ConfigLoader(SafeLoader):
+class IncludeAtSpec:
+    def __init__(self, path: str):
+        self.path = path
+        self._base_path: Optional[str] = None
+
+    def set_base_path(self, base_path: str) -> None:
+        self._base_path = base_path
+
+
+class ConfigLoader(UnsafeLoader):
     pass
 
 
@@ -120,9 +129,23 @@ def construct_import(loader: ConfigLoader, node: ScalarNode) -> ImportSpec:
     return ImportSpec(loader.construct_scalar(node))
 
 
+def construct_include_at(loader: ConfigLoader, node: ScalarNode) -> IncludeAtSpec:
+    if not isinstance(node, ScalarNode):
+        line_info = f" at line {node.start_mark.line + 1}" if hasattr(node, 'start_mark') and node.start_mark else ""
+        raise TagError(f"!include_at must be used with a file path, not {node.tag}{line_info}")
+    
+    path = loader.construct_scalar(node)
+    if not path or not isinstance(path, str):
+        line_info = f" at line {node.start_mark.line + 1}" if hasattr(node, 'start_mark') and node.start_mark else ""
+        raise TagError(f"!include_at requires a non-empty file path{line_info}")
+    
+    return IncludeAtSpec(path)
+
+
 ConfigLoader.add_multi_constructor("!@", construct_callspec)
 ConfigLoader.add_constructor("!env", construct_env)
 ConfigLoader.add_constructor("!extend", construct_extend)
 ConfigLoader.add_constructor("!patch", construct_patch)
 ConfigLoader.add_constructor("!include", construct_include)
 ConfigLoader.add_constructor("!import", construct_import)
+ConfigLoader.add_constructor("!include_at", construct_include_at)
