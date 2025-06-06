@@ -1,18 +1,5 @@
-lr: 0.001
-criterion: !@torch.nn.CrossEntropyLoss
-optimizer: !@torch.optim.Adam
-  params: !@pyamlo.call ${model.parameters}
-  lr: ${lr}
-
 trainer: !@ignite.engine.create_supervised_trainer
   model: ${model}
   optimizer: ${optimizer}
   loss_fn: ${criterion}
   device: ${device}
-
-pbar: !@ignite.handlers.ProgressBar
-  persist: true
-
-attach_pbar: !@pyamlo.call
-  calling: ${pbar.attach}
-  engine: ${trainer}

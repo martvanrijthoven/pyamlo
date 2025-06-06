@@ -1,10 +1,10 @@
 # include data and model configurations
 include!:
   - ./devices/auto.yml 
-  - ./datasets/mnist.yml
+  - ./datasets/selector.yml
   - ./models/selector.yml
-  - ./trainers/supervised.yml
-  - ./evaluators/supervised.yml
+  - ./trainers/selector.yml
+  - ./evaluators/selector.yml
 
 model_msg: !@print Model:\n ${model}
 

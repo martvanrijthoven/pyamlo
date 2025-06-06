@@ -1,5 +1,5 @@
 model_name: cnn
-model: !include_at ./architectures/${model_name}.yml
+model: !include_at ./${model_name}.yml
 model_device_setup: !@pyamlo.call
   calling: ${model.to}
   device: ${device}

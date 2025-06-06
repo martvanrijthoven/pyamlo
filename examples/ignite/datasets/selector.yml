@@ -1,0 +1,12 @@
+dataset_name: mnist
+train_dataset, val_dataset: !include_at ./${dataset_name}.yml
+
+train_loader: !@torch.utils.data.DataLoader
+  dataset: ${train_dataset}
+  batch_size: 64
+  shuffle: true
+
+val_loader: !@torch.utils.data.DataLoader
+  dataset: ${val_dataset}
+  batch_size: 64
+  shuffle: false

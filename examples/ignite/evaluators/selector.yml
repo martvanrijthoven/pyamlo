@@ -1,0 +1,2 @@
+evaluator_name: supervised
+evaluator: !include_at ./${evaluator_name}.yml
