@@ -1,67 +1,53 @@
-# PyTorch Ignite with PYAMLO
+# PyTorch Ignite Integration Guide
 
-This guide demonstrates using PyTorch Ignite with PYAMLO for MNIST digit classification, showcasing modular ML configuration management.
+PYAMLO makes PyTorch Ignite configurations modular and reusable. This guide shows a complete MNIST CNN example using the selector pattern.
 
-## Quick Start
+## Complete Example
 
-### Prerequisites
-```bash
-pip install -e .[ml]  # Install PYAMLO with ML dependencies
+**run_modular.yml**
+```yaml
+# Configuration selection
+dataset_name: mnist
+model_name: cnn
+
+# Load modular components
+include!:
+  - ./devices/auto.yml 
+  - ./datasets/selector.yml
+  - ./models/selector.yml
+  - ./trainers/selector.yml
+  - ./evaluators/selector.yml
+
+# Training settings
+epochs: 1
+
+# Train model
+train_result: !$@trainer.run
+  start_msg: "Starting training..."
+  finish_msg: "Training completed!"
+  data: ${train_loader}
+  max_epochs: ${epochs}
+
+# Evaluate model
+eval_result: !$@evaluator.run
+  start_msg: "Running evaluation..."
+  finish_msg: "Evaluation completed!"
+  data: ${val_loader}
+
+# Display results
+results_msg: !@pprint.pprint ${evaluator.state.metrics}
 ```
 
-### Run Examples
-```bash
-cd examples/ignite
+## Components
 
-# Monolithic approach - everything in one file
-python -m pyamlo run_monolithic.yml
-
-# Modular approach - split into focused components
-python -m pyamlo run_modular.yml
-```
-
-Both configurations will:
-1. Download MNIST dataset (if not present)
-2. Train a CNN model for 1 epoch
-3. Evaluate on test set
-4. Display training progress and final accuracy
-
-!!! warning "First Run"
-    The first run downloads the MNIST dataset (~9.9 MB), which may take a few moments.
-
-## Configuration Structure
-
-### File Organization
-```
-examples/ignite/
-├── run_modular.yml     # Main configuration file
-├── run_monolithic.yml  # Single-file alternative
-├── devices/auto.yml    # Device detection
-├── datasets/
-│   ├── selector.yml    # Dataset selection
-│   └── mnist.yml       # MNIST configuration
-├── models/
-│   ├── selector.yml    # Model selection
-│   ├── cnn.yml         # CNN architecture
-│   └── resnet.yml      # ResNet architecture
-├── trainers/selector.yml    # Training configuration
-└── evaluators/selector.yml  # Evaluation setup
-```
-
-The modular approach provides better organization, easier maintenance, and component reusability.
-
-## Key Components
-
-The configuration uses a selector pattern for flexible component switching:
-
-### Device Configuration
+**devices/auto.yml**
 ```yaml
 cuda: !@torch.cuda.is_available
 device: !@torch.device
   type: "${'cuda' if cuda else 'cpu'}"
 ```
 
-### Dataset Selection
+**datasets/selector.yml**
 ```yaml
 dataset_name: mnist
 train_dataset, val_dataset: !include_from ./${dataset_name}.yml
@@ -70,67 +56,115 @@ train_loader: !@torch.utils.data.DataLoader
   dataset: ${train_dataset}
   batch_size: 64
   shuffle: true
+
+val_loader: !@torch.utils.data.DataLoader
+  dataset: ${val_dataset}
+  batch_size: 64
+  shuffle: false
 ```
 
-### Model Selection
+**datasets/mnist.yml**
+```yaml
+transform: !@torchvision.transforms.Compose
+  transforms:
+    - !@torchvision.transforms.ToTensor
+    - !@torchvision.transforms.Normalize
+      mean: [0.1307]
+      std: [0.3081]
+
+train_dataset: !@torchvision.datasets.MNIST
+  root: "./data"
+  train: true
+  download: true
+  transform: ${transform}
+
+val_dataset: !@torchvision.datasets.MNIST
+  root: "./data"
+  train: false
+  download: true
+  transform: ${transform}
+```
+
+**models/selector.yml**
 ```yaml
 model_name: cnn
 model: !include_from ./${model_name}.yml
+model: !$@model.to ${device}
 ```
 
-### Main Configuration
+**models/cnn.yml**
 ```yaml
-include!:
-  - ./devices/auto.yml 
-  - ./datasets/selector.yml
-  - ./models/selector.yml
-  - ./trainers/selector.yml
-  - ./evaluators/selector.yml
-
-epochs: 1
-train_result: !$@trainer.run
-  data: ${train_loader}
-  max_epochs: ${epochs}
+model: !@torch.nn.Sequential
+  - !@torch.nn.Conv2d
+    in_channels: 1
+    out_channels: 32
+    kernel_size: 3
+    padding: 1
+  - !@torch.nn.ReLU
+  - !@torch.nn.MaxPool2d
+    kernel_size: 2
+  - !@torch.nn.Conv2d
+    in_channels: 32
+    out_channels: 64
+    kernel_size: 3
+    padding: 1
+  - !@torch.nn.ReLU
+  - !@torch.nn.MaxPool2d
+    kernel_size: 2
+  - !@torch.nn.Flatten
+  - !@torch.nn.Linear
+    in_features: 3136
+    out_features: 128
+  - !@torch.nn.ReLU
+  - !@torch.nn.Dropout
+    p: 0.5
+  - !@torch.nn.Linear
+    in_features: 128
+    out_features: 10
 ```
-## Usage
 
-### Command Line Overrides
+**trainers/selector.yml** 
+```yaml
+lr: 0.001
+optimizer: !@torch.optim.Adam
+  params: !$@model.parameters
+  lr: ${lr}
+
+loss_fn: !@torch.nn.CrossEntropyLoss
+
+trainer: !@ignite.engine.create_supervised_trainer
+  model: ${model}
+  optimizer: ${optimizer}
+  loss_fn: ${loss_fn}
+  device: ${device}
+```
+
+**evaluators/selector.yml**
+```yaml
+evaluator: !@ignite.engine.create_supervised_evaluator
+  model: ${model}
+  metrics:
+    accuracy: !@ignite.metrics.Accuracy
+    loss: !@ignite.metrics.Loss ${loss_fn}
+  device: ${device}
+```
+
+## Key Features
+
+- **Selector Pattern**: Use `${component_name}` to dynamically load configurations
+- **Device Auto-detection**: Automatically uses CUDA if available
+- **Modular Components**: Separate files for datasets, models, trainers, and evaluators
+- **Dynamic References**: Model and data flow through the configuration
+- **Runtime Flexibility**: Change components via CLI overrides
+
+## Running
+
 ```bash
-# Change learning rate
-python -m pyamlo run_modular.yml pyamlo.lr=0.01
+cd examples/ignite
 
-# Change model
-python -m pyamlo run_modular.yml pyamlo.model_name=resnet
+# Basic training
+python -m pyamlo run_modular.yml
 
-# Multiple overrides
-python -m pyamlo run_modular.yml pyamlo.lr=0.01 pyamlo.epochs=5 pyamlo.model_name=resnet
-```
-
-## Selector Pattern
-
-The modular configuration uses a selector pattern for maximum flexibility:
-
-```yaml
-# In any selector.yml file
-component_name: default_option
-component: !include_from ./${component_name}.yml
-```
-
-This pattern enables:
-- **Runtime selection**: Change components via CLI overrides
-- **Easy extensibility**: Add new components by creating new files
-- **Clean organization**: Keep related configurations together
-
-### Advanced Usage
-
-**Environment variables:**
-```yaml
-learning_rate: !env {var: LEARNING_RATE, default: 0.001}
-model_name: !env {var: MODEL_NAME, default: "cnn"}
-```
-
-**Conditional configuration:**
-```yaml
-is_cuda_available: !@torch.cuda.is_available
-batch_size: "${128 if is_cuda_available else 32}"
+# With overrides
+python -m pyamlo run_modular.yml pyamlo.model_name=resnet pyamlo.lr=0.01
 ```

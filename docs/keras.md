@@ -113,26 +113,3 @@ class MNISTDataset:
 cd examples/keras
 PYTHONPATH=. python -m pyamlo train.yml
 ```
-
-## Advanced Example
-
-```yaml
-# With callbacks
-callbacks:
-  - !@tensorflow.keras.callbacks.EarlyStopping
-      monitor: "val_loss"
-      patience: 3
-
-compile_step: !$@model.compile
-  optimizer: !@tensorflow.keras.optimizers.Adam
-    learning_rate: 0.001
-  loss: "sparse_categorical_crossentropy"
-  metrics: ["accuracy"]
-
-history: !$@model.fit
-  x: ${dataset.x_train}
-  y: ${dataset.y_train}
-  validation_data: ['${dataset.x_test}', '${dataset.y_test}']
-  epochs: 50
-  callbacks: ${callbacks}
-```
