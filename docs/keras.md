@@ -137,7 +137,7 @@ history: !@pyamlo.call
   calling: ${model.fit}
   x: ${dataset.x_train}
   y: ${dataset.y_train}
-  validation_data: [${dataset.x_test}, ${dataset.y_test}]
+  validation_data: ['${dataset.x_test}', '${dataset.y_test}']
   epochs: 50
   callbacks: ${callbacks}
 ```
