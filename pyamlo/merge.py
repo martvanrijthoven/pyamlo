@@ -5,7 +5,7 @@ from typing import Any
 
 import yaml
 
-from pyamlo.tags import CallSpec, ConfigLoader, ExtendSpec, PatchSpec, IncludeAtSpec
+from pyamlo.tags import CallSpec, ConfigLoader, ExtendSpec, PatchSpec, IncludeFromSpec
 
 
 class MergeError(Exception):
@@ -56,13 +56,13 @@ def _resolve_path(path: str, base_path: str | None = None, context: dict[str, An
     # Interpolate variables if context provided
     if context:
         for var, value in context.items():
-            if not isinstance(value, IncludeAtSpec):  # Skip include specs
+            if not isinstance(value, IncludeFromSpec):  # Skip include specs
                 path = path.replace(f"${{{var}}}", str(value))
         
         # Check for unresolved variables
         if '${' in path:
             unresolved = re.findall(r'\$\{([^}]+)\}', path)
-            available = [k for k in context.keys() if not isinstance(context[k], IncludeAtSpec)]
+            available = [k for k in context.keys() if not isinstance(context[k], IncludeFromSpec)]
             raise IncludeError(
                 f"Unresolved variables in path: {', '.join(unresolved)}. "
                 f"Available: {', '.join(available)}"
@@ -84,23 +84,23 @@ def process_includes(raw: dict[str, Any], base_path: str | None = None) -> dict[
         part = _load_traditional_include(entry, base_path)
         deep_merge(merged, part)
     
-    # Process positional !include_at entries while preserving order
+    # Process positional !include_from entries while preserving order
     result = {}
     for key, value in raw.items():
-        if isinstance(value, IncludeAtSpec):
+        if isinstance(value, IncludeFromSpec):
             # Load and process the included file
             path = _resolve_path(value.path, base_path, raw)
             included = _load_file(path)
             included = process_includes(included, path)  # Recursive processing
             
-            # Always validate keys for !include_at
+            # Always validate keys for !include_from
             if ',' in key:
                 # Comma syntax: validate multiple expected keys
                 expected_keys = {k.strip() for k in key.split(',')}
             else:
                 # Single key syntax: validate only that key
                 expected_keys = {key}
-            _validate_include_at_keys(included, expected_keys, path)
+            _validate_include_from_keys(included, expected_keys, path)
             
             # Add included content directly to result (replaces the key)
             deep_merge(result, included)
@@ -112,7 +112,7 @@ def process_includes(raw: dict[str, Any], base_path: str | None = None) -> dict[
     return deep_merge(merged, result)
 
 
-def _validate_include_at_keys(included: dict[str, Any], expected_keys: set[str], file_path: str) -> None:
+def _validate_include_from_keys(included: dict[str, Any], expected_keys: set[str], file_path: str) -> None:
     """Validate that included file only contains expected keys or keys starting with underscore."""
     included_keys = set(included.keys())
     
@@ -136,9 +136,9 @@ def _load_traditional_include(entry: Any, base_path: str | None = None) -> dict[
     if isinstance(entry, str):
         path = _resolve_path(entry, base_path)
         content = _load_file(path)
-        # Process includes within the loaded file if it contains include! or !include_at tags
+        # Process includes within the loaded file if it contains include! or !include_from tags
         needs_processing = 'include!' in content or any(
-            isinstance(v, IncludeAtSpec) for v in content.values()
+            isinstance(v, IncludeFromSpec) for v in content.values()
         )
         return process_includes(content, path) if needs_processing else content
     

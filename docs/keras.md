@@ -12,8 +12,8 @@ model_name: cnn
 optimizer_name: adam
 
 # Load modular components
-dataset: !include_at datasets/${dataset_name}.yml
-model: !include_at models/${model_name}.yml
+dataset: !include_from datasets/${dataset_name}.yml
+model: !include_from models/${model_name}.yml
 
 # Training settings
 batch_size: 32

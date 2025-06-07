@@ -5,7 +5,7 @@ optimizer: !@torch.optim.Adam
   lr: ${lr}
 
 trainer_name: supervised
-trainer: !include_at ./${trainer_name}.yml
+trainer: !include_from ./${trainer_name}.yml
   
 pbar: !@ignite.handlers.ProgressBar
   persist: true

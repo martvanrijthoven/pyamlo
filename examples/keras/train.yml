@@ -7,8 +7,8 @@ model_name: cnn
 optimizer_name: adam
 
 # Load configurations
-dataset: !include_at datasets/${dataset_name}.yml
-model: !include_at models/${model_name}.yml
+dataset: !include_from datasets/${dataset_name}.yml
+model: !include_from models/${model_name}.yml
 
 # Training parameters
 batch_size: 32

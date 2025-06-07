@@ -51,7 +51,7 @@ class ImportSpec:
         self.path = path
 
 
-class IncludeAtSpec:
+class IncludeFromSpec:
     def __init__(self, path: str):
         self.path = path
         self._base_path: Optional[str] = None
@@ -129,17 +129,17 @@ def construct_import(loader: ConfigLoader, node: ScalarNode) -> ImportSpec:
     return ImportSpec(loader.construct_scalar(node))
 
 
-def construct_include_at(loader: ConfigLoader, node: ScalarNode) -> IncludeAtSpec:
+def construct_include_from(loader: ConfigLoader, node: ScalarNode) -> IncludeFromSpec:
     if not isinstance(node, ScalarNode):
         line_info = f" at line {node.start_mark.line + 1}" if hasattr(node, 'start_mark') and node.start_mark else ""
-        raise TagError(f"!include_at must be used with a file path, not {node.tag}{line_info}")
+        raise TagError(f"!include_from must be used with a file path, not {node.tag}{line_info}")
     
     path = loader.construct_scalar(node)
     if not path or not isinstance(path, str):
         line_info = f" at line {node.start_mark.line + 1}" if hasattr(node, 'start_mark') and node.start_mark else ""
-        raise TagError(f"!include_at requires a non-empty file path{line_info}")
+        raise TagError(f"!include_from requires a non-empty file path{line_info}")
     
-    return IncludeAtSpec(path)
+    return IncludeFromSpec(path)
 
 
 ConfigLoader.add_multi_constructor("!@", construct_callspec)
@@ -148,4 +148,4 @@ ConfigLoader.add_constructor("!extend", construct_extend)
 ConfigLoader.add_constructor("!patch", construct_patch)
 ConfigLoader.add_constructor("!include", construct_include)
 ConfigLoader.add_constructor("!import", construct_import)
-ConfigLoader.add_constructor("!include_at", construct_include_at)
+ConfigLoader.add_constructor("!include_from", construct_include_from)

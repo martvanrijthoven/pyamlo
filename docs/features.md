@@ -12,13 +12,13 @@ include!:
   - environment.yaml
 ```
 
-### Positional Includes (`!include_at`)
+### Positional Includes (`!include_from`)
 Include files at specific positions, replacing the key with file contents:
 
 ```yaml
 app:
   name: MyApp
-middleware: !include_at middleware.yml
+middleware: !include_from middleware.yml
 database:
   host: localhost
 ```
@@ -50,14 +50,14 @@ database:
 ```
 
 #### Key Validation
-`!include_at` validates that included files contain only expected keys:
+`!include_from` validates that included files contain only expected keys:
 
 ```yaml
 # Single key - file must contain 'config' key
-config: !include_at config.yml
+config: !include_from config.yml
 
 # Multiple keys - file must contain 'train_loader' and 'val_loader' keys  
-train_loader, val_loader: !include_at loaders.yml
+train_loader, val_loader: !include_from loaders.yml
 ```
 
 Keys starting with underscore (e.g., `_helper`) are always allowed.
@@ -66,7 +66,7 @@ Keys starting with underscore (e.g., `_helper`) are always allowed.
 Use variable interpolation in file paths:
 ```yaml
 environment: production
-config: !include_at configs/${environment}/api.yml
+config: !include_from configs/${environment}/api.yml
 ```
 
 

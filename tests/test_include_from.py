@@ -1,4 +1,4 @@
-"""Tests for !include_at positional include functionality."""
+"""Tests for !include_from positional include functionality."""
 
 import tempfile
 from pathlib import Path
@@ -8,12 +8,12 @@ import pytest
 
 from pyamlo import load_config
 from pyamlo.merge import IncludeError
-from pyamlo.tags import IncludeAtSpec, construct_include_at, ConfigLoader, TagError
+from pyamlo.tags import IncludeFromSpec, construct_include_from, ConfigLoader, TagError
 from yaml import ScalarNode, MappingNode
 
 
-def test_include_at_basic_functionality(tmp_path):
-    """Test basic !include_at functionality with positional includes."""
+def test_include_from_basic_functionality(tmp_path):
+    """Test basic !include_from functionality with positional includes."""
     
     # Create a file to include
     included_content = """
@@ -28,13 +28,13 @@ _middleware:
     included_file = tmp_path / "middleware.yml"
     included_file.write_text(included_content.strip())
     
-    # Create main config with !include_at
+    # Create main config with !include_from
     main_content = f"""
 app:
   name: MyApp
   version: 1.0
 
-_middleware: !include_at {included_file}
+_middleware: !include_from {included_file}
 
 database:
   host: localhost
@@ -63,8 +63,8 @@ database:
     assert keys == expected_order
 
 
-def test_include_at_with_relative_paths(tmp_path):
-    """Test !include_at with relative paths."""
+def test_include_from_with_relative_paths(tmp_path):
+    """Test !include_from with relative paths."""
     
     # Create subdirectory
     subdir = tmp_path / "configs"
@@ -84,7 +84,7 @@ _shared_config:
 app:
   name: TestApp
 
-_shared_config: !include_at configs/shared.yml
+_shared_config: !include_from configs/shared.yml
 
 database:
   host: localhost
@@ -98,14 +98,14 @@ database:
     assert config["_shared_config"]["debug"] is True
 
 
-def test_include_at_file_not_found(tmp_path):
+def test_include_from_file_not_found(tmp_path):
     """Test error handling when included file doesn't exist."""
     
     main_content = """
 app:
   name: TestApp
 
-_missing: !include_at nonexistent.yml
+_missing: !include_from nonexistent.yml
 
 database:
   host: localhost
@@ -117,8 +117,8 @@ database:
         load_config(str(main_file))
 
 
-def test_include_at_multiple_positions(tmp_path):
-    """Test multiple !include_at tags at different positions."""
+def test_include_from_multiple_positions(tmp_path):
+    """Test multiple !include_from tags at different positions."""
     
     # Create first included file
     first_content = """
@@ -143,12 +143,12 @@ _logging_config:
 app:
   name: MultiIncludeApp
 
-_cache_config: !include_at {first_file}
+_cache_config: !include_from {first_file}
 
 database:
   host: db.example.com
 
-_logging_config: !include_at {second_file}
+_logging_config: !include_from {second_file}
 
 monitoring:
   enabled: true
@@ -171,34 +171,34 @@ monitoring:
     assert keys == expected_order
 
 
-def test_include_at_construct_function():
-    """Test the construct_include_at function directly."""
+def test_include_from_construct_function():
+    """Test the construct_include_from function directly."""
     
     # Test valid usage
     loader = ConfigLoader("")
-    node = ScalarNode("!include_at", "test.yml")
-    result = construct_include_at(loader, node)
+    node = ScalarNode("!include_from", "test.yml")
+    result = construct_include_from(loader, node)
     
-    assert isinstance(result, IncludeAtSpec)
+    assert isinstance(result, IncludeFromSpec)
     assert result.path == "test.yml"
     
     # Test invalid usage (non-scalar node)
-    mapping_node = MappingNode("!include_at", [])
-    with pytest.raises(TagError, match="!include_at must be used with a file path"):
-        construct_include_at(loader, mapping_node)
+    mapping_node = MappingNode("!include_from", [])
+    with pytest.raises(TagError, match="!include_from must be used with a file path"):
+        construct_include_from(loader, mapping_node)
 
 
-def test_include_at_with_base_path():
+def test_include_from_with_base_path():
     """Test that base paths are properly set and used."""
-    spec = IncludeAtSpec("test.yml")
+    spec = IncludeFromSpec("test.yml")
     assert spec._base_path is None
     
     spec.set_base_path("/path/to/config.yml")
     assert spec._base_path == "/path/to/config.yml"
 
 
-def test_include_at_with_string_io():
-    """Test !include_at functionality with StringIO sources."""
+def test_include_from_with_string_io():
+    """Test !include_from functionality with StringIO sources."""
     
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
@@ -217,7 +217,7 @@ _middleware:
 app:
   name: StringIOApp
 
-_middleware: !include_at {included_file}
+_middleware: !include_from {included_file}
 
 database:
   host: localhost
@@ -230,8 +230,8 @@ database:
         assert config["_middleware"]["cors"] is True
 
 
-def test_include_at_with_variable_interpolation(tmp_path):
-    """Test !include_at with variable interpolation in file paths."""
+def test_include_from_with_variable_interpolation(tmp_path):
+    """Test !include_from with variable interpolation in file paths."""
     
     # Create included file
     included_content = """
@@ -249,7 +249,7 @@ env: prod
 app:
   name: VarApp
 
-_db_config: !include_at ${{env}}_db.yml
+_db_config: !include_from ${{env}}_db.yml
 
 monitoring:
   enabled: true
@@ -265,8 +265,8 @@ monitoring:
     assert config["_db_config"]["ssl"] is True
 
 
-def test_include_at_with_nested_variable_interpolation(tmp_path):
-    """Test !include_at with nested variable references."""
+def test_include_from_with_nested_variable_interpolation(tmp_path):
+    """Test !include_from with nested variable references."""
     
     # Create included file
     included_content = """
@@ -283,7 +283,7 @@ domain: example.com
 subdomain: api
 service_type: api
 
-_api_settings: !include_at ${{service_type}}_config.yml
+_api_settings: !include_from ${{service_type}}_config.yml
 
 app:
   name: NestedVarApp
@@ -298,7 +298,7 @@ app:
     assert config["_api_settings"]["base_url"] == "https://api.example.com/api"
 
 
-def test_include_at_with_missing_variable(tmp_path):
+def test_include_from_with_missing_variable(tmp_path):
     """Test error handling when variable is missing for interpolation."""
     
     # Create main config with undefined variable
@@ -306,7 +306,7 @@ def test_include_at_with_missing_variable(tmp_path):
 app:
   name: MissingVarApp
 
-_config: !include_at ${undefined_var}_config.yml
+_config: !include_from ${undefined_var}_config.yml
 
 database:
   host: localhost
@@ -319,8 +319,8 @@ database:
         load_config(str(main_file))
 
 
-def test_include_at_with_complex_path_interpolation(tmp_path):
-    """Test !include_at with complex path interpolation patterns."""
+def test_include_from_with_complex_path_interpolation(tmp_path):
+    """Test !include_from with complex path interpolation patterns."""
     
     # Create subdirectories
     env_dir = tmp_path / "configs" / "production"
@@ -344,7 +344,7 @@ service: cache
 app:
   name: ComplexPathApp
 
-_cache_config: !include_at configs/${environment}/${service}.yml
+_cache_config: !include_from configs/${environment}/${service}.yml
 
 monitoring:
   enabled: true
@@ -360,7 +360,7 @@ monitoring:
     assert config["_cache_config"]["cluster"] is True
 
 
-def test_include_at_variable_interpolation_within_included_files(tmp_path):
+def test_include_from_variable_interpolation_within_included_files(tmp_path):
     """Test that variable interpolation works within included files."""
     
     # Create included file with variables
@@ -385,7 +385,7 @@ db_pass: secret123
 db_host: db.internal
 db_name: myapp_prod
 
-_service_config: !include_at service.yml
+_service_config: !include_from service.yml
 
 monitoring:
   enabled: true
@@ -402,8 +402,8 @@ monitoring:
     assert config["_service_config"]["database"]["url"] == "postgresql://admin:secret123@db.internal:5432/myapp_prod"
 
 
-def test_include_at_with_recursive_includes(tmp_path):
-    """Test !include_at working within traditionally included files."""
+def test_include_from_with_recursive_includes(tmp_path):
+    """Test !include_from working within traditionally included files."""
     
     # Create the deepest included file
     deep_content = """
@@ -414,13 +414,13 @@ _metrics:
     deep_file = tmp_path / "metrics.yml"
     deep_file.write_text(deep_content.strip())
     
-    # Create middle include file that uses include_at
+    # Create middle include file that uses include_from
     middle_content = f"""
 middleware:
   cors: true
   rate_limit: 100
 
-_metrics: !include_at metrics.yml
+_metrics: !include_from metrics.yml
 
 security:
   auth_required: true
@@ -446,7 +446,7 @@ database:
     # Verify all levels of inclusion work
     assert "app" in config
     assert "middleware" in config
-    assert "_metrics" in config["middleware"]  # From include_at within included file
+    assert "_metrics" in config["middleware"]  # From include_from within included file
     assert "middleware" in config["middleware"]  # Original middleware content
     assert "security" in config["middleware"]
     assert "database" in config
@@ -457,7 +457,7 @@ database:
     assert config["middleware"]["security"]["auth_required"] is True
 
 
-def test_include_at_error_handling_invalid_yaml(tmp_path):
+def test_include_from_error_handling_invalid_yaml(tmp_path):
     """Test error handling when included file contains invalid YAML."""
     
     # Create file with invalid YAML
@@ -474,7 +474,7 @@ invalid: yaml content
 app:
   name: InvalidYamlApp
 
-_invalid: !include_at invalid.yml
+_invalid: !include_from invalid.yml
 
 database:
   host: localhost
@@ -487,8 +487,8 @@ database:
         load_config(str(main_file))
 
 
-def test_include_at_preserves_order_with_mixed_content(tmp_path):
-    """Test that !include_at preserves order when mixed with regular content."""
+def test_include_from_preserves_order_with_mixed_content(tmp_path):
+    """Test that !include_from preserves order when mixed with regular content."""
     
     # Create multiple include files
     first_content = "_first:\n  value: 1"
@@ -503,22 +503,22 @@ def test_include_at_preserves_order_with_mixed_content(tmp_path):
     second_file.write_text(second_content)
     third_file.write_text(third_content)
     
-    # Create main config with mixed include_at and regular content
+    # Create main config with mixed include_from and regular content
     main_content = f"""
 start:
   marker: begin
 
-_first: !include_at first.yml
+_first: !include_from first.yml
 
 middle1:
   regular: content1
 
-_second: !include_at second.yml
+_second: !include_from second.yml
 
 middle2:
   regular: content2
 
-_third: !include_at third.yml
+_third: !include_from third.yml
 
 end:
   marker: finish
@@ -540,15 +540,15 @@ end:
     assert config["middle1"]["regular"] == "content1"
 
 
-def test_include_at_improved_error_messages(tmp_path):
-    """Test improved error messages for include_at failures."""
+def test_include_from_improved_error_messages(tmp_path):
+    """Test improved error messages for include_from failures."""
     
     # Test unresolved variables with helpful context
     main_content = """
 app:
   name: TestApp
 
-_config: !include_at configs/${environment}/${missing_var}.yml
+_config: !include_from configs/${environment}/${missing_var}.yml
 
 database:
   host: localhost
@@ -560,14 +560,14 @@ database:
         load_config(str(main_file))
 
 
-def test_include_at_file_not_found_with_resolution_info(tmp_path):
+def test_include_from_file_not_found_with_resolution_info(tmp_path):
     """Test file not found error with variable resolution information."""
     
     main_content = """
 env: production
 service: api
 
-_config: !include_at configs/${env}/${service}.yml
+_config: !include_from configs/${env}/${service}.yml
 """
     main_file = tmp_path / "main.yml"
     main_file.write_text(main_content.strip())
@@ -576,39 +576,39 @@ _config: !include_at configs/${env}/${service}.yml
         load_config(str(main_file))
 
 
-def test_include_at_invalid_tag_usage():
-    """Test error handling for invalid !include_at tag usage."""
+def test_include_from_invalid_tag_usage():
+    """Test error handling for invalid !include_from tag usage."""
     
     # Test with mapping instead of scalar
     yaml_content = """
 app:
   name: TestApp
 
-_config: !include_at
+_config: !include_from
   path: config.yml
   invalid: true
 """
     
-    with pytest.raises(TagError, match=r"!include_at must be used with a file path.*line \d+"):
+    with pytest.raises(TagError, match=r"!include_from must be used with a file path.*line \d+"):
         load_config(StringIO(yaml_content))
 
 
-def test_include_at_empty_path():
+def test_include_from_empty_path():
     """Test error handling for empty file path."""
     
     yaml_content = """
 app:
   name: TestApp
 
-_config: !include_at ""
+_config: !include_from ""
 """
     
-    with pytest.raises(TagError, match=r"!include_at requires a non-empty file path.*line \d+"):
+    with pytest.raises(TagError, match=r"!include_from requires a non-empty file path.*line \d+"):
         load_config(StringIO(yaml_content))
 
 
-def test_include_at_key_validation_success(tmp_path):
-    """Test that !include_at validates keys correctly when they match expectations."""
+def test_include_from_key_validation_success(tmp_path):
+    """Test that !include_from validates keys correctly when they match expectations."""
     
     # Create included file with expected keys only
     included_content = """
@@ -632,7 +632,7 @@ _shared_config:
 app:
   name: ValidationApp
 
-train_loader, val_loader: !include_at {included_file}
+train_loader, val_loader: !include_from {included_file}
 
 model:
   type: cnn
@@ -650,8 +650,8 @@ model:
     assert "_shared_config" in config  # Underscore keys are included
 
 
-def test_include_at_key_validation_failure(tmp_path):
-    """Test that !include_at raises error when included file has unexpected keys."""
+def test_include_from_key_validation_failure(tmp_path):
+    """Test that !include_from raises error when included file has unexpected keys."""
     
     # Create included file with unexpected key
     included_content = """
@@ -679,7 +679,7 @@ _helper:
 app:
   name: ValidationApp
 
-train_loader, val_loader: !include_at {included_file}
+train_loader, val_loader: !include_from {included_file}
 
 model:
   type: cnn
@@ -692,8 +692,8 @@ model:
         load_config(str(main_file))
 
 
-def test_include_at_key_validation_missing_expected(tmp_path):
-    """Test that !include_at handles missing expected keys gracefully."""
+def test_include_from_key_validation_missing_expected(tmp_path):
+    """Test that !include_from handles missing expected keys gracefully."""
     
     # Create included file missing one expected key
     included_content = """
@@ -714,7 +714,7 @@ _helper:
 app:
   name: ValidationApp
 
-train_loader, val_loader: !include_at {included_file}
+train_loader, val_loader: !include_from {included_file}
 
 model:
   type: cnn
@@ -729,8 +729,8 @@ model:
     assert "val_loader" not in config  # Missing from included file, so not in result
 
 
-def test_include_at_single_key_validation(tmp_path):
-    """Test that !include_at validates single key without comma syntax."""
+def test_include_from_single_key_validation(tmp_path):
+    """Test that !include_from validates single key without comma syntax."""
     
     # Create included file with matching key
     included_content = """
@@ -749,7 +749,7 @@ _helper:
 app:
   name: SingleKeyApp
 
-config: !include_at {included_file}
+config: !include_from {included_file}
 
 model:
   type: cnn
@@ -765,8 +765,8 @@ model:
     assert "_helper" in config
 
 
-def test_include_at_single_key_validation_failure(tmp_path):
-    """Test that !include_at validates single key and fails with wrong key."""
+def test_include_from_single_key_validation_failure(tmp_path):
+    """Test that !include_from validates single key and fails with wrong key."""
     
     # Create included file with wrong key
     included_content = """
@@ -784,7 +784,7 @@ _helper:
 app:
   name: SingleKeyApp
 
-config: !include_at {included_file}
+config: !include_from {included_file}
 
 model:
   type: cnn
@@ -797,8 +797,8 @@ model:
         load_config(str(main_file))
 
 
-def test_include_at_single_key_validation_multiple_keys_failure(tmp_path):
-    """Test that !include_at single key validation fails when file has multiple unexpected keys."""
+def test_include_from_single_key_validation_multiple_keys_failure(tmp_path):
+    """Test that !include_from single key validation fails when file has multiple unexpected keys."""
     
     # Create included file with multiple keys but only one expected
     included_content = """
@@ -822,7 +822,7 @@ _helper:
 app:
   name: SingleKeyApp
 
-config: !include_at {included_file}
+config: !include_from {included_file}
 
 model:
   type: cnn

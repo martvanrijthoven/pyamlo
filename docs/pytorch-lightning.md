@@ -46,9 +46,9 @@ examples/lightning/
 dataset: mnist
 model_name: mobilenet
 
-# Load configurations using !include_at
-model: !include_at ${model_name}.yml
-train_dataset, val_dataset: !include_at ${dataset}.yml
+# Load configurations using !include_from
+model: !include_from ${model_name}.yml
+train_dataset, val_dataset: !include_from ${dataset}.yml
 
 # DataLoaders
 train_loader: !@torch.utils.data.DataLoader
@@ -262,7 +262,7 @@ Both integrate seamlessly with PYAMLO's configuration management, allowing you t
 1. **Modular Configuration**: Split datasets, models, and training configs into separate files
 2. **Environment Variables**: Use `!env` for deployment-specific settings
 3. **CLI Overrides**: Leverage command line overrides for experimentation
-4. **Validation**: Use `!include_at` validation to ensure configuration consistency
+4. **Validation**: Use `!include_from` validation to ensure configuration consistency
 5. **Logging**: Configure appropriate loggers for experiment tracking
 6. **Callbacks**: Use Lightning callbacks for checkpointing and early stopping
 

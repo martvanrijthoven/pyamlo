@@ -9,12 +9,12 @@ import yaml
 from pyamlo.cli import process_cli
 from pyamlo.merge import deep_merge, process_includes
 from pyamlo.resolve import Resolver
-from pyamlo.tags import ConfigLoader, IncludeSpec, IncludeAtSpec
+from pyamlo.tags import ConfigLoader, IncludeSpec, IncludeFromSpec
 
 
 def _set_base_paths(data: Any, base_path: str) -> None:
-    """Recursively set base paths on IncludeSpec and IncludeAtSpec objects."""
-    if isinstance(data, (IncludeSpec, IncludeAtSpec)):
+    """Recursively set base paths on IncludeSpec and IncludeAsSpec objects."""
+    if isinstance(data, (IncludeSpec, IncludeFromSpec)):
         data.set_base_path(base_path)
     elif isinstance(data, dict):
         for value in data.values():

@@ -64,7 +64,7 @@ device: !@torch.device
 ### Dataset Selection
 ```yaml
 dataset_name: mnist
-train_dataset, val_dataset: !include_at ./${dataset_name}.yml
+train_dataset, val_dataset: !include_from ./${dataset_name}.yml
 
 train_loader: !@torch.utils.data.DataLoader
   dataset: ${train_dataset}
@@ -75,7 +75,7 @@ train_loader: !@torch.utils.data.DataLoader
 ### Model Selection
 ```yaml
 model_name: cnn
-model: !include_at ./${model_name}.yml
+model: !include_from ./${model_name}.yml
 ```
 
 ### Main Configuration
@@ -114,7 +114,7 @@ The modular configuration uses a selector pattern for maximum flexibility:
 ```yaml
 # In any selector.yml file
 component_name: default_option
-component: !include_at ./${component_name}.yml
+component: !include_from ./${component_name}.yml
 ```
 
 This pattern enables:
