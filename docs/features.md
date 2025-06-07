@@ -1,21 +1,67 @@
 # Features
 
-PYAMLO enhances standard YAML loading with powerful features for complex configurations.
+PYAMLO extends standard YAML with powerful features for complex configurations, making it perfect for machine learning, data pipelines, and application configuration management.
 
-## File Inclusion
+## Quick Reference
 
-### Standard Includes (`include!`)
-Merge multiple configuration files with deep merging:
-```yaml
-include!:
-  - base.yaml
-  - environment.yaml
+### Special Tags
+| Syntax | Purpose | Example |
+|--------|---------|---------|
+| `include!` | Include & merge files | `include!: [base.yml, env.yml]` |
+| `!include` | Include single file at key | `config: !include config.yml` |
+| `!include_from` | Include content as key(s) | `config1, config2: !include_from config.yml` |
+| `!@` | Instantiate Python objects | `!@datetime.datetime 2023 1 1` |
+| `!$@` | Dynamic object creation | `!$torch.nn.@layer_type` or `!$@optimizer_class` |
+| `!import` | Import Python modules | `!import datetime.datetime` |
+| `!env` | Environment variables | `!env {var: API_KEY, default: none}` |
+| `!extend` | Extend existing lists | `items: !extend [4, 5, 6]` |
+| `!patch` | Replace dictionaries | `config: !patch {debug: true}` |
+
+### Variable Expressions (`${...}`)
+| Type | Operators | Example |
+|------|-----------|---------|
+| **References** | `.` access | `${app.name} v${app.version}` |
+| **Math** | `+` `-` `*` `/` `//` `%` `**` | `${workers * 2 + 1}` |
+| **Bitwise** | `&` `\|` `^` `~` `<<` `>>` | `${flags \| permissions}` |
+| **Comparison** | `==` `!=` `<` `<=` `>` `>=` `in` | `${env == 'production'}` |
+| **Logical** | `and` `or` `not` | `${debug and verbose}` |
+| **Conditional** | `if-else` | `${50 if prod else 10}` |
+
+## 1. File Management
+
+### Multiple Configuration Files
+Load and merge configurations in order of precedence:
+
+```python
+from pyamlo import load_config
+
+# Single file
+config = load_config('config.yml')
+
+# Multiple files (later files override earlier ones)
+config = load_config(['base.yml', 'production.yml', 'user.yml'])
 ```
 
-### Positional Includes (`!include_from`)
-Include files at specific positions, replacing the key with file contents:
+### File Inclusion (`include!`)
+Merge external files with deep merging:
 
 ```yaml
+# main.yml
+include!:
+  - database.yml
+  - logging.yml
+  - features.yml
+
+app:
+  name: MyApp
+  version: 1.0
+```
+
+### Positional Inclusion (`!include_from`)
+Insert file contents at specific locations:
+
+```yaml
+# config.yml
 app:
   name: MyApp
 middleware: !include_from middleware.yml
@@ -23,15 +69,14 @@ database:
   host: localhost
 ```
 
-**middleware.yml:**
 ```yaml
-middleware:
-  cache:
-    enabled: true
-    ttl: 3600
-  monitoring:
-    enabled: true
-    port: 9090
+# middleware.yml
+cache:
+  enabled: true
+  ttl: 3600
+monitoring:
+  enabled: true
+  port: 9090
 ```
 
 **Result:**
@@ -50,100 +95,91 @@ database:
 ```
 
 #### Key Validation
-`!include_from` validates that included files contain only expected keys:
-
+Validates included files contain expected keys:
 ```yaml
-# Single key - file must contain 'config' key
-config: !include_from config.yml
-
-# Multiple keys - file must contain 'train_loader' and 'val_loader' keys  
-train_loader, val_loader: !include_from loaders.yml
+config: !include_from config.yml                    # Must contain 'config' key
+train_loader, val_loader: !include_from loaders.yml # Must contain both keys
 ```
 
-Keys starting with underscore (e.g., `_helper`) are always allowed.
-
-#### Dynamic Include Paths
-Use variable interpolation in file paths:
+#### Dynamic Paths
+Use variables in file paths:
 ```yaml
 environment: production
 config: !include_from configs/${environment}/api.yml
 ```
 
+## 2. Python Integration
 
+### Import Modules (`!import`)
+Import Python classes and functions:
 
-## Multiple Config Files
-Load and merge multiple configuration files in order:
-```python
-# Base config, then environment-specific, then user overrides
-config = load_config(['base.yaml', 'production.yaml', 'user-override.yaml'])
-```
-
-## Merging Strategies
-- **Deep Merge**: Recursively merges dictionaries (default)
-- **List Extension (`!extend`)**: Appends to existing lists
-- **Dictionary Replacement (`!patch`)**: Completely replaces dictionaries
-
-## Environment Variables (`!env`)
-Inject environment variables with optional defaults:
-```yaml
-api_key: !env {var: API_KEY, default: "not-set"}
-database_url: !env DATABASE_URL
-```
-
-## Python Integration
-
-### Module Import (`!import`)
-Import Python modules, classes, or functions:
 ```yaml
 datetime: !import datetime.datetime
-pathlib: !import pathlib.Path
+Path: !import pathlib.Path
 ```
 
-### Object Instantiation (`!@`)
-Create Python objects directly from YAML:
+### Create Objects (`!@`)
+Instantiate Python objects directly:
+
 ```yaml
-log_path: !@pathlib.Path /var/log/app.log
+# Simple objects
+current_time: !@datetime.datetime 2023 12 25 10 30
+
+# Complex objects with parameters
 database: !@psycopg2.connect
   host: localhost
   port: 5432
+  database: myapp
+  user: admin
 ```
 
-### Interpolated Object Instantiation (`!$`)
-Create objects with variable interpolation in the module path:
-```yaml
-model_type: "Linear"
-activation_type: "ReLU"
+### Dynamic Object Creation (`!$@`)
+Create objects with variable interpolation:
 
-# Variable in module path
+```yaml
+model_type: Linear
+activation: ReLU
+
+# Variable in class name
 layer: !$torch.nn.@model_type
-  in_features: 10
-  out_features: 5
+  in_features: 784
+  out_features: 128
 
 # Variable as entire path
-activation: !$@activation_type
+activation_fn: !$@activation
 
-# Multiple variables in nested config
+# Complex neural network example
 network:
-  layer1: !$torch.nn.@model_type
-    in_features: 784
-    out_features: 128
-  activation1: !$torch.nn.@activation_type
+  layers:
+    - !$torch.nn.@model_type:
+        in_features: 784
+        out_features: 256
+    - !$torch.nn.@activation
+    - !$torch.nn.@model_type:
+        in_features: 256
+        out_features: 10
 ```
 
-This enables dynamic object creation based on configuration variables, making configs more flexible and reusable.
+## 3. Variable Interpolation
 
-## Variable Interpolation (`${...}`)
-Reference other config values and perform calculations within YAML.
+### Basic References (`${...}`)
+Reference other configuration values:
 
-### Basic References
 ```yaml
 app:
   name: MyApp
   version: 1.0
-  title: ${app.name} v${app.version}  # "MyApp v1.0"
+  title: ${app.name} v${app.version}  # Result: "MyApp v1.0"
+  
+database:
+  host: localhost
+  port: 5432
+  url: postgresql://${database.host}:${database.port}/mydb
 ```
 
-### Mathematical Expressions
+### Mathematical Operations
+Perform calculations within configurations:
+
 ```yaml
 server:
   workers: 4
@@ -156,65 +192,85 @@ pricing:
   total: ${pricing.base_price * (1 + pricing.tax_rate)}  # 12.1
 ```
 
-### Conditional Logic
-```yaml
-app:
-  env: production
-  debug: ${app.env == 'development'}  # false
-  
-database:
-  pool_size: ${50 if app.env == 'production' else 10}
-  host: ${'prod.db.com' if app.env == 'production' else 'localhost'}
-  
-features:
-  enable_cache: ${app.env in ['production', 'staging']}
-  rate_limiting: ${app.env == 'production' or app.env == 'staging'}
-```
-
-### Object Property Access
-```yaml
-database: !@psycopg2.connect
-  host: localhost
-  port: 5432
-
-connection_info: ${database.host}:${database.port}  # "localhost:5432"
-```
-
-### Bitwise Operations
-```yaml
-permissions:
-  read: 4    # Binary: 100
-  write: 2   # Binary: 010
-  execute: 1 # Binary: 001
-  
-  full_access: ${permissions.read | permissions.write | permissions.execute}  # 7
-  can_read: ${permissions.full_access & permissions.read}  # 4 (truthy)
-  no_write: ${permissions.full_access & ~permissions.write}  # 5
-```
-
 **Supported Operations:**
 - **Math**: `+`, `-`, `*`, `/`, `//`, `%`, `**`
 - **Bitwise**: `&`, `|`, `^`, `~`, `<<`, `>>`
 - **Comparison**: `==`, `!=`, `<`, `<=`, `>`, `>=`, `in`
 - **Logical**: `and`, `or`, `not`
-- **Ternary**: `value_if_true if condition else value_if_false`
-- **Ternary**: `value_if_true if condition else value_if_false`
 
-## CLI Overrides
-Override configuration values via command line using the `pyamlo.` prefix:
+### Conditional Logic
+Dynamic configuration based on conditions:
+
+```yaml
+app:
+  environment: production
+  debug: ${app.environment == 'development'}  # false
+  
+database:
+  pool_size: ${50 if app.environment == 'production' else 10}
+  host: ${'prod.db.com' if app.environment == 'production' else 'localhost'}
+  
+features:
+  cache_enabled: ${app.environment in ['production', 'staging']}
+  rate_limiting: ${app.environment != 'development'}
+```
+
+## 4. Environment & External Data
+
+### Environment Variables (`!env`)
+Inject environment variables with optional defaults:
+
+```yaml
+# Simple usage
+api_key: !env API_KEY
+database_url: !env DATABASE_URL
+
+# With defaults (using 'var' or 'name')
+api_key: !env {var: API_KEY, default: "development-key"}
+debug_mode: !env {name: DEBUG, default: false}
+port: !env {var: PORT, default: 8000}
+```
+
+### Merging Strategies
+Control how data is combined:
+
+```yaml
+# Default: Deep merge (recursively merges dictionaries)
+base_config:
+  database:
+    host: localhost
+    port: 5432
+
+# Extend lists instead of replacing
+existing_items: [1, 2, 3]
+more_items: !extend [4, 5, 6]  # Result: [1, 2, 3, 4, 5, 6]
+
+# Replace entire dictionaries
+old_settings:
+  debug: false
+  verbose: true
+new_settings: !patch {debug: true}  # Completely replaces old_settings
+```
+
+## 5. Command Line Integration
+
+### CLI Overrides
+Override any configuration value from the command line using `pyamlo.` prefix:
 
 ```bash
-# Single config with overrides
-python -m pyamlo config.yml pyamlo.app.name=MyApp pyamlo.database.host=localhost
+# Basic overrides
+python -m pyamlo config.yml pyamlo.app.name=MyApp pyamlo.debug=true
 
-# Multiple configs with overrides
-python -m pyamlo base.yml production.yml pyamlo.debug=true pyamlo.database.pool_size=20
+# Multiple files with overrides
+python -m pyamlo base.yml prod.yml pyamlo.database.pool_size=20
 
 # Special tags in overrides
 python -m pyamlo config.yml 'pyamlo.items=!extend [4,5]' 'pyamlo.settings=!patch {"debug": true}'
 ```
 
-**Programmatic usage:**
+### Programmatic Usage
+Control configuration loading in Python:
+
 ```python
 from pyamlo import load_config
 
@@ -226,14 +282,63 @@ config = load_config("config.yml", use_cli=True)
 
 # Combined approach
 config = load_config("config.yml", 
-    overrides=["pyamlo.app.name=MyApp"],  # Manual
-    use_cli=True  # Also read from sys.argv
+    overrides=["pyamlo.app.name=MyApp"],  # Manual overrides
+    use_cli=True                         # Also read from sys.argv
 )
 ```
 
-**Processing Order:**
-1. Include processing (per file)
-2. Config file merging (left to right)
-3. Manual overrides (via `overrides` parameter)
-4. CLI overrides (via `use_cli=True`)
-5. Variable resolution and object instantiation
+### Processing Order
+Configuration values are processed in this order (later overrides earlier):
+
+1. **Include processing** (per file)
+2. **Config file merging** (left to right)
+3. **Manual overrides** (via `overrides` parameter)
+4. **CLI overrides** (via `use_cli=True`)
+5. **Variable resolution** and object instantiation
+
+## Complete Example
+
+Here's a comprehensive example showing multiple features together:
+
+```yaml
+# config.yml
+include!:
+  - database.yml
+  - logging.yml
+
+app:
+  name: MyApp
+  environment: ${ENV:-development}
+  debug: ${app.environment == 'development'}
+  version: 1.0.0
+  title: ${app.name} v${app.version}
+
+# Dynamic model creation
+model_type: Linear
+optimizer_class: torch.optim.Adam
+
+model: !$torch.nn.@model_type
+  in_features: 784
+  out_features: ${128 if app.environment == 'production' else 64}
+
+optimizer: !$@optimizer_class
+  lr: 0.001
+
+# Environment-specific settings  
+database:
+  pool_size: ${50 if app.environment == 'production' else 10}
+  host: !env {name: DB_HOST, default: localhost}
+
+# External configuration
+middleware: !include_from middleware/${app.environment}.yml
+
+# Extended configuration
+base_features: [auth, logging]
+features: !extend [monitoring, caching]
+
+# Runtime objects
+logger: !@logging.getLogger ${app.name}
+start_time: !@datetime.datetime.now
+```
+
+This example demonstrates file inclusion, variable interpolation, conditional logic, environment variables, dynamic object creation with both `!$torch.nn.@variable` and `!$@variable` patterns, and list extension all working together.
