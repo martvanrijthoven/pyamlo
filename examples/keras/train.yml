@@ -44,4 +44,5 @@ test_results: !@pyamlo.call
   verbose: 0
 
 # Print results using simple message
-final_message: !@print "Training completed! Check history and test_results for details."
+print_results: !@print "Test results: ${test_results}"
+final_message: !@print "Training completed!"
