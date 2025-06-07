@@ -1,0 +1,47 @@
+# Simple Keras MNIST Training
+# Run with: PYTHONPATH=examples/keras python -m pyamlo examples/keras/train_simple.yml
+
+# Configuration selection
+dataset_name: mnist
+model_name: cnn
+optimizer_name: adam
+
+# Load configurations
+dataset: !include_at datasets/${dataset_name}.yml
+model: !include_at models/${model_name}.yml
+
+# Training parameters
+batch_size: 32
+epochs: 1
+validation_split: 0.1
+
+# Compile model
+compile_step: !@pyamlo.call
+  calling: ${model.compile}
+  optimizer: ${optimizer_name}
+  loss: "sparse_categorical_crossentropy"
+  metrics: ["accuracy"]
+
+# Print model summary
+summary_step: !@pyamlo.call
+  calling: ${model.summary}
+
+# Train the model
+history: !@pyamlo.call
+  calling: ${model.fit}
+  x: ${dataset.x_train}
+  y: ${dataset.y_train}
+  batch_size: ${batch_size}
+  epochs: ${epochs}
+  validation_split: ${validation_split}
+  verbose: 1
+
+# Evaluate on test set
+test_results: !@pyamlo.call
+  calling: ${model.evaluate}
+  x: ${dataset.x_test}
+  y: ${dataset.y_test}
+  verbose: 0
+
+# Print results using simple message
+final_message: !@print "Training completed! Check history and test_results for details."

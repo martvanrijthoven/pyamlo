@@ -1,0 +1,28 @@
+model: !@tensorflow.keras.Sequential
+  layers:
+    - !@tensorflow.keras.layers.Conv2D
+        filters: 32
+        kernel_size: [3, 3]
+        activation: "relu"
+        input_shape: ${dataset.input_shape}
+    - !@tensorflow.keras.layers.MaxPooling2D
+        pool_size: [2, 2]
+    - !@tensorflow.keras.layers.Conv2D
+        filters: 64
+        kernel_size: [3, 3]
+        activation: "relu"
+    - !@tensorflow.keras.layers.MaxPooling2D
+        pool_size: [2, 2]
+    - !@tensorflow.keras.layers.Conv2D
+        filters: 64
+        kernel_size: [3, 3]
+        activation: "relu"
+    - !@tensorflow.keras.layers.Flatten
+    - !@tensorflow.keras.layers.Dense
+        units: 64
+        activation: "relu"
+    - !@tensorflow.keras.layers.Dropout
+        rate: 0.5
+    - !@tensorflow.keras.layers.Dense
+        units: ${dataset.num_classes}
+        activation: "softmax"

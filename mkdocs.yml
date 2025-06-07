@@ -9,6 +9,7 @@ nav:
   - Features: features.md
   - PyTorch Ignite: pytorch-ignite.md
   - PyTorch Lightning: pytorch-lightning.md
+  - Keras: keras.md
   - Best Practices: best-practices.md
 
   
