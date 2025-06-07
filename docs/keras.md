@@ -21,14 +21,12 @@ epochs: 1
 validation_split: 0.1
 
 # Compile and train
-compile_step: !@pyamlo.call
-  calling: ${model.compile}
+compile_step: !$@model.compile
   optimizer: ${optimizer_name}
   loss: "sparse_categorical_crossentropy"
   metrics: ["accuracy"]
 
-history: !@pyamlo.call
-  calling: ${model.fit}
+history: !$@model.fit
   x: ${dataset.x_train}
   y: ${dataset.y_train}
   batch_size: ${batch_size}
@@ -36,8 +34,7 @@ history: !@pyamlo.call
   validation_split: ${validation_split}
   verbose: 1
 
-test_results: !@pyamlo.call
-  calling: ${model.evaluate}
+test_results: !$@model.evaluate
   x: ${dataset.x_test}
   y: ${dataset.y_test}
   verbose: 0
@@ -126,15 +123,13 @@ callbacks:
       monitor: "val_loss"
       patience: 3
 
-compile_step: !@pyamlo.call
-  calling: ${model.compile}
+compile_step: !$@model.compile
   optimizer: !@tensorflow.keras.optimizers.Adam
     learning_rate: 0.001
   loss: "sparse_categorical_crossentropy"
   metrics: ["accuracy"]
 
-history: !@pyamlo.call
-  calling: ${model.fit}
+history: !$@model.fit
   x: ${dataset.x_train}
   y: ${dataset.y_train}
   validation_data: ['${dataset.x_test}', '${dataset.y_test}']

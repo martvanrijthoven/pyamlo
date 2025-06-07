@@ -10,16 +10,14 @@ model_msg: !@print Model:\n ${model}
 
 # Start training for 1 epoch
 epochs: 1
-train_result: !@pyamlo.call
-  calling: ${trainer.run}
+train_result: !$@trainer.run
   start_msg: "Starting training..."
   finish_msg: "Training completed!"
   data: ${train_loader}
   max_epochs: ${epochs}
 
 # Run evaluation
-eval_result: !@pyamlo.call
-  calling: ${evaluator.run}
+eval_result: !$@evaluator.run
   start_msg: "Running evaluation..."
   finish_msg: "Evaluation completed!"
   data: ${val_loader}

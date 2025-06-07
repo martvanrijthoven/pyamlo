@@ -6,7 +6,6 @@ from yaml import ScalarNode
 
 from pyamlo import load_config
 from pyamlo.merge import deep_merge
-from pyamlo.resolve import call
 from pyamlo.tags import CallSpec, ConfigLoader, PatchSpec, construct_callspec
 
 
@@ -55,14 +54,6 @@ def test_callspec_none_scalar():
     node = ScalarNode("!@test", None)
     spec = construct_callspec(loader, "test", node)
     assert spec.args == []
-
-
-def test_config_call():
-    def example_fn(a=None):
-        return a
-
-    assert call(lambda: 42) == 42
-    assert call(example_fn, a=10) == 10
 
 
 def test_import_tag():

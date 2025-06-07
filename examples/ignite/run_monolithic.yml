@@ -62,8 +62,7 @@ model: !@torch.nn.Sequential
 # Loss and optimizer
 criterion: !@torch.nn.CrossEntropyLoss
 optimizer: !@torch.optim.Adam
-  params: !@pyamlo.call
-    calling: ${model.parameters}
+  params: !$@model.parameters
   lr: 0.001
 
 # Device
@@ -71,8 +70,7 @@ device: !@torch.device
   type: "cpu"
 
 # Move model to device  
-setup: !@pyamlo.call
-  calling: ${model.to}
+setup: !$@model.to
   device: ${device}
 
 # Create Ignite trainer and evaluator
@@ -95,13 +93,11 @@ pbar: !@ignite.handlers.ProgressBar
   persist: true
 
 # Attach progress bar
-attach_pbar: !@pyamlo.call
-  calling: ${pbar.attach}
+attach_pbar: !$@pbar.attach
   engine: ${trainer}
 
 # Start training for 2 epochs
-train_result: !@pyamlo.call
-  calling: ${trainer.run}
+train_result: !$@trainer.run
   data: ${train_loader}
   max_epochs: 1
 
@@ -109,8 +105,7 @@ train_result: !@pyamlo.call
 completion_msg: !@print "Training completed!"
 
 # Run final evaluation
-eval_result: !@pyamlo.call
-  calling: ${evaluator.run}
+eval_result: !$@evaluator.run
   data: ${val_loader}
 
 results_msg: !@print "Evaluation completed! ${evaluator.state.metrics}"

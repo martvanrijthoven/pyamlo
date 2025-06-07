@@ -108,6 +108,30 @@ database: !@psycopg2.connect
   port: 5432
 ```
 
+### Interpolated Object Instantiation (`!$`)
+Create objects with variable interpolation in the module path:
+```yaml
+model_type: "Linear"
+activation_type: "ReLU"
+
+# Variable in module path
+layer: !$torch.nn.@model_type
+  in_features: 10
+  out_features: 5
+
+# Variable as entire path
+activation: !$@activation_type
+
+# Multiple variables in nested config
+network:
+  layer1: !$torch.nn.@model_type
+    in_features: 784
+    out_features: 128
+  activation1: !$torch.nn.@activation_type
+```
+
+This enables dynamic object creation based on configuration variables, making configs more flexible and reusable.
+
 ## Variable Interpolation (`${...}`)
 Reference other config values and perform calculations within YAML.
 

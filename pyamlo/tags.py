@@ -37,6 +37,20 @@ class CallSpec:
         self.kwargs: dict[str, Any] = kwargs
 
 
+class InterpolatedCallSpec:
+    """A CallSpec that defers path interpolation until resolution time."""
+
+    def __init__(
+        self,
+        path_template: str,
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ):
+        self.path_template = path_template  # Contains {variable} placeholders
+        self.args = args
+        self.kwargs = kwargs
+
+
 class IncludeSpec:
     def __init__(self, path: str):
         self.path = path
@@ -119,6 +133,25 @@ def construct_callspec(
     raise TagError(f"Unsupported !@ tag '{suffix}' at {node.start_mark}")
 
 
+def construct_interpolated_callspec(
+    loader: ConfigLoader,
+    suffix: str,
+    node: Union[MappingNode, SequenceNode, ScalarNode],
+) -> InterpolatedCallSpec:
+    """Constructor for !$ tags that defers path interpolation."""
+    if isinstance(node, MappingNode):
+        mapping: dict[Hashable, Any] = loader.construct_mapping(node, deep=True)
+        return InterpolatedCallSpec(suffix, [], mapping)  # type: ignore
+    if isinstance(node, SequenceNode):
+        seq: list[Any] = loader.construct_sequence(node, deep=True)
+        return InterpolatedCallSpec(suffix, seq, {})
+    if isinstance(node, ScalarNode):
+        val = loader.construct_scalar(node)
+        args: list[Any] = [] if val in (None, "") else [val]
+        return InterpolatedCallSpec(suffix, args, {})
+    raise TagError(f"Unsupported !$ tag '{suffix}' at {node.start_mark}")
+
+
 def construct_include(loader: ConfigLoader, node: ScalarNode) -> IncludeSpec:
     return IncludeSpec(loader.construct_scalar(node))
 
@@ -143,6 +176,7 @@ def construct_include_from(loader: ConfigLoader, node: ScalarNode) -> IncludeFro
 
 
 ConfigLoader.add_multi_constructor("!@", construct_callspec)
+ConfigLoader.add_multi_constructor("!$", construct_interpolated_callspec)
 ConfigLoader.add_constructor("!env", construct_env)
 ConfigLoader.add_constructor("!extend", construct_extend)
 ConfigLoader.add_constructor("!patch", construct_patch)

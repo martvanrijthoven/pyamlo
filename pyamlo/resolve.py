@@ -7,7 +7,7 @@ from typing import Any
 
 from pyamlo.expressions import ExpressionEvaluator, is_expression
 from pyamlo.merge import _load_file, process_includes
-from pyamlo.tags import CallSpec, ImportSpec, IncludeSpec, ResolutionError
+from pyamlo.tags import CallSpec, ImportSpec, IncludeSpec, InterpolatedCallSpec, ResolutionError
 
 
 class Resolver:
@@ -37,6 +37,43 @@ class Resolver:
     @resolve.register
     def _(self, node: CallSpec, path: str = "") -> Any:
         fn = _import_attr(node.path)
+        args = [self.resolve(a, path) for a in node.args]
+        kwargs = {k: self.resolve(v, path) for k, v in node.kwargs.items()}
+        inst = _apply_call(fn, args, kwargs)
+        self.ctx[path] = inst
+        return inst
+
+    @resolve.register
+    def _(self, node: InterpolatedCallSpec, path: str = "") -> Any:
+        # Handle variable interpolation in the path template
+        path_template = node.path_template
+        
+        # If the path starts with @variable, it means we want to access an object or its method
+        if path_template.startswith('@'):
+            var_name = path_template[1:]  # Remove the @ prefix
+            if '.' in var_name:
+                # Split on the first dot to separate object from method/attribute
+                obj_name, method_name = var_name.split('.', 1)
+                obj = self._get(obj_name)
+                fn = getattr(obj, method_name)
+            else:
+                # Entire path is a variable reference - could be a string (module path) or object
+                var_value = self._get(var_name)
+                if isinstance(var_value, str):
+                    # If it's a string, treat it as a module path to import
+                    fn = _import_attr(var_value)
+                else:
+                    # If it's already an object, use it directly
+                    fn = var_value
+        else:
+            # Handle regular module path with @variable substitutions
+            interpolated_path = re.sub(
+                r'@([a-zA-Z_][a-zA-Z0-9_]*)',
+                lambda m: str(self._get(m.group(1))), 
+                path_template
+            )
+            fn = _import_attr(interpolated_path)
+        
         args = [self.resolve(a, path) for a in node.args]
         kwargs = {k: self.resolve(v, path) for k, v in node.kwargs.items()}
         inst = _apply_call(fn, args, kwargs)
@@ -86,17 +123,6 @@ class Resolver:
                     f"Failed to resolve '{tok}' in '{path}': {e}"
                 ) from e
         return obj
-
-
-def call(calling, start_msg=None, finish_msg=None, **kwargs):
-    if start_msg is not None:
-        print(start_msg)
-    if not kwargs:
-        return calling()
-    out = calling(**kwargs)
-    if finish_msg is not None:
-        print(finish_msg)
-    return out 
 
 
 def _import_attr(path: str):

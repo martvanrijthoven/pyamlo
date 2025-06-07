@@ -1,3 +1,4 @@
+
 model: !@tensorflow.keras.Sequential
   layers:
     - !@tensorflow.keras.layers.Conv2D
@@ -5,13 +6,13 @@ model: !@tensorflow.keras.Sequential
         kernel_size: [3, 3]
         activation: "relu"
         input_shape: ${dataset.input_shape}
-    - !@tensorflow.keras.layers.MaxPooling2D
+    - !$tensorflow.keras.layers.@pooling
         pool_size: [2, 2]
     - !@tensorflow.keras.layers.Conv2D
         filters: 64
         kernel_size: [3, 3]
         activation: "relu"
-    - !@tensorflow.keras.layers.MaxPooling2D
+    - !$tensorflow.keras.layers.@pooling
         pool_size: [2, 2]
     - !@tensorflow.keras.layers.Conv2D
         filters: 64

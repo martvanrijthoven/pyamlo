@@ -45,7 +45,6 @@ paths:
     - ${paths.base}
     - data.yml
 
-hostdefault: !@pyamlo.call "${services.main.as_dict}" 
 
 info:
   base_path: ${paths.base}

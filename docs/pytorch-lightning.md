@@ -73,8 +73,7 @@ trainer: !@lightning.pytorch.Trainer
   devices: 1
 
 # Start training
-train: !@pyamlo.call
-  calling: ${trainer.fit}
+train: !$@trainer.fit
   model: ${lightning_model}
   train_dataloaders: ${train_loader}
   val_dataloaders: ${val_loader}

@@ -88,8 +88,7 @@ include!:
   - ./evaluators/selector.yml
 
 epochs: 1
-train_result: !@pyamlo.call
-  calling: ${trainer.run}
+train_result: !$@trainer.run
   data: ${train_loader}
   max_epochs: ${epochs}
 ```
