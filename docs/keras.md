@@ -1,4 +1,4 @@
-# Keras Integration Guide
+# Keras/Tensorflow Integration Guide
 
 PYAMLO makes Keras/TensorFlow configurations modular and reusable. This guide shows a complete MNIST CNN example.
 
