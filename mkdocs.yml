@@ -7,9 +7,10 @@ edit_uri: edit/main/docs/ # Or appropriate branch/path
 nav:
   - Home: index.md
   - Features: features.md
-  - Ignite: ignite.md
-  - Lightning: lightning.md
-  - Keras: keras.md
+  - AI Examples:
+    - PyTorch Ignite: ignite.md
+    - PyTorch Lightning: lightning.md
+    - Keras/TensorFlow: keras.md
   - Best Practices: best-practices.md
 
   
