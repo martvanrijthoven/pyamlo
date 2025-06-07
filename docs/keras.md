@@ -100,13 +100,6 @@ class MNISTDataset:
         self.input_shape = (28, 28, 1)
 ```
 
-## Key Features
-
-- **Dataset Classes**: Encapsulate data loading and preprocessing
-- **Dynamic References**: Model uses `${dataset.input_shape}` and `${dataset.num_classes}`
-- **String Optimizers**: Simple `optimizer: "adam"` instead of complex objects
-- **Modular Design**: Separate files for datasets and models
-
 ## Running
 
 ```bash

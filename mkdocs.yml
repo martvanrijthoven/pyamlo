@@ -7,8 +7,8 @@ edit_uri: edit/main/docs/ # Or appropriate branch/path
 nav:
   - Home: index.md
   - Features: features.md
-  - PyTorch Ignite: pytorch-ignite.md
-  - PyTorch Lightning: pytorch-lightning.md
+  - Ignite: ignite.md
+  - Lightning: lightning.md
   - Keras: keras.md
   - Best Practices: best-practices.md
 

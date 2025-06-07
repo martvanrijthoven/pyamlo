@@ -124,15 +124,6 @@ class LightningModel(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), lr=self.lr)
 ```
 
-## Key Features
-
-- **Lightning Integration**: Seamless PyTorch Lightning workflow configuration
-- **Model Adaptation**: Automatic model modification for different input channels  
-- **Built-in Metrics**: Automatic logging of training and validation metrics
-- **Device Auto-detection**: Automatically uses available accelerators
-- **Modular Design**: Separate files for datasets and models
-- **Checkpointing**: Built-in model state saving and resuming
-
 ## Running
 
 ```bash

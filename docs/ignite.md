@@ -149,14 +149,6 @@ evaluator: !@ignite.engine.create_supervised_evaluator
   device: ${device}
 ```
 
-## Key Features
-
-- **Selector Pattern**: Use `${component_name}` to dynamically load configurations
-- **Device Auto-detection**: Automatically uses CUDA if available
-- **Modular Components**: Separate files for datasets, models, trainers, and evaluators
-- **Dynamic References**: Model and data flow through the configuration
-- **Runtime Flexibility**: Change components via CLI overrides
-
 ## Running
 
 ```bash
