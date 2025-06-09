@@ -7,7 +7,8 @@ from typing import IO, Any, Optional, Sequence, Union
 import yaml
 
 from pyamlo.cli import process_cli
-from pyamlo.merge import deep_merge, process_includes
+from pyamlo.merge import deep_merge
+from pyamlo.include import process_includes
 from pyamlo.resolve import Resolver
 from pyamlo.tags import ConfigLoader, IncludeSpec, IncludeFromSpec
 
@@ -90,4 +91,5 @@ def load_config(
 
     if all_overrides:
         config = process_cli(config, all_overrides)
-    return Resolver().resolve(config)
+    cfg = Resolver().resolve(config)
+    return cfg

@@ -23,4 +23,4 @@ class MNISTDataset:
         self.input_shape = (28, 28, 1)
     
     def __repr__(self):
-        return f"MNISTDataset(num_classes={self.get_num_classes()}, input_shape={self.get_input_shape()})"
+        return f"MNISTDataset(num_classes={self.num_classes()}, input_shape={self.input_shape()})"

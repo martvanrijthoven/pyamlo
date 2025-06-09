@@ -7,8 +7,8 @@ from io import StringIO
 import pytest
 
 from pyamlo import load_config
-from pyamlo.merge import IncludeError
-from pyamlo.tags import IncludeFromSpec, construct_include_from, ConfigLoader, TagError
+from pyamlo.include import IncludeError
+from pyamlo.tags import IncludeFromSpec, construct_include_from, ConfigLoader, TagError, ResolutionError
 from yaml import ScalarNode, MappingNode
 
 
@@ -315,7 +315,7 @@ database:
     main_file.write_text(main_content.strip())
     
     # Should raise an error for undefined variable
-    with pytest.raises(IncludeError, match="Unresolved variables"):
+    with pytest.raises(ResolutionError, match="Unknown variable 'undefined_var'"):
         load_config(str(main_file))
 
 
@@ -420,7 +420,7 @@ middleware:
   cors: true
   rate_limit: 100
 
-_metrics: !include_from metrics.yml
+_metrics: !include_from {deep_file}
 
 security:
   auth_required: true
@@ -556,7 +556,7 @@ database:
     main_file = tmp_path / "main.yml"
     main_file.write_text(main_content.strip())
     
-    with pytest.raises(IncludeError, match=r"Unresolved variables.*missing_var.*Available.*app"):
+    with pytest.raises(ResolutionError, match=r"Unknown variable.*environment"):
         load_config(str(main_file))
 
 
@@ -610,29 +610,36 @@ _config: !include_from ""
 def test_include_from_key_validation_success(tmp_path):
     """Test that !include_from validates keys correctly when they match expectations."""
     
-    # Create included file with expected keys only
-    included_content = """
+    # Create included file for train_loader
+    train_content = """
 train_loader:
   batch_size: 64
   shuffle: true
-
-val_loader:
-  batch_size: 32
-  shuffle: false
 
 # Helper key starting with underscore is allowed
 _shared_config:
   timeout: 30
 """
-    included_file = tmp_path / "loaders.yml"
-    included_file.write_text(included_content.strip())
+    train_file = tmp_path / "train_loader.yml"
+    train_file.write_text(train_content.strip())
     
-    # Create main config with expected keys specified
+    # Create included file for val_loader
+    val_content = """
+val_loader:
+  batch_size: 32
+  shuffle: false
+"""
+    val_file = tmp_path / "val_loader.yml"
+    val_file.write_text(val_content.strip())
+    
+    # Create main config with separate include_from statements
     main_content = f"""
 app:
   name: ValidationApp
 
-train_loader, val_loader: !include_from {included_file}
+train_loader: !include_from {train_file}
+
+val_loader: !include_from {val_file}
 
 model:
   type: cnn
@@ -647,39 +654,34 @@ model:
     assert "val_loader" in config
     assert config["train_loader"]["batch_size"] == 64
     assert config["val_loader"]["batch_size"] == 32
-    assert "_shared_config" in config  # Underscore keys are included
 
 
 def test_include_from_key_validation_failure(tmp_path):
-    """Test that !include_from raises error when included file has unexpected keys."""
+    """Test that !include_from succeeds when the expected key exists, even with other keys."""
     
-    # Create included file with unexpected key
+    # Create included file with expected key and other keys
     included_content = """
 train_loader:
   batch_size: 64
   shuffle: true
 
-val_loader:
-  batch_size: 32
-  shuffle: false
-
-# This key is not expected and should cause validation error
+# Other keys are ignored when extracting train_loader
 unexpected_key:
-  value: "should cause error"
+  value: "ignored"
 
-# Helper key starting with underscore is allowed
+# Helper key starting with underscore is also ignored
 _helper:
   config: value  
 """
-    included_file = tmp_path / "loaders.yml"
+    included_file = tmp_path / "train_loader.yml"
     included_file.write_text(included_content.strip())
     
-    # Create main config with expected keys specified
+    # Create main config expecting only train_loader
     main_content = f"""
 app:
   name: ValidationApp
 
-train_loader, val_loader: !include_from {included_file}
+train_loader: !include_from {included_file}
 
 model:
   type: cnn
@@ -687,34 +689,36 @@ model:
     main_file = tmp_path / "main.yml"
     main_file.write_text(main_content.strip())
     
-    # Should raise IncludeError about unexpected key
-    with pytest.raises(IncludeError, match="unexpected_key.*Expected keys.*train_loader.*val_loader"):
-        load_config(str(main_file))
+    # Should succeed since train_loader key exists (other keys are ignored)
+    config = load_config(str(main_file))
+    
+    assert "train_loader" in config
+    assert config["train_loader"]["batch_size"] == 64
+    assert "unexpected_key" not in config  # Not extracted
+    assert "_helper" not in config  # Not extracted
 
 
 def test_include_from_key_validation_missing_expected(tmp_path):
     """Test that !include_from handles missing expected keys gracefully."""
     
-    # Create included file missing one expected key
+    # Create included file with only train_loader (no val_loader)
     included_content = """
 train_loader:
   batch_size: 64
   shuffle: true
 
-# val_loader is missing but should be allowed (not strict requirement)
-
 _helper:
   config: value  
 """
-    included_file = tmp_path / "loaders.yml"
+    included_file = tmp_path / "train_loader.yml"
     included_file.write_text(included_content.strip())
     
-    # Create main config with expected keys specified
+    # Create main config expecting only train_loader
     main_content = f"""
 app:
   name: ValidationApp
 
-train_loader, val_loader: !include_from {included_file}
+train_loader: !include_from {included_file}
 
 model:
   type: cnn
@@ -722,11 +726,11 @@ model:
     main_file = tmp_path / "main.yml"
     main_file.write_text(main_content.strip())
     
-    # Should succeed (missing keys are allowed, only extra unexpected keys cause errors)
+    # Should succeed since we're only asking for train_loader
     config = load_config(str(main_file))
     
     assert "train_loader" in config
-    assert "val_loader" not in config  # Missing from included file, so not in result
+    assert "val_loader" not in config  # Not requested, so not in result
 
 
 def test_include_from_single_key_validation(tmp_path):
@@ -762,13 +766,13 @@ model:
     
     assert "config" in config
     assert config["config"]["database_url"] == "postgres://localhost"
-    assert "_helper" in config
+    assert "_helper" not in config  # Helper keys are not extracted by !include_from
 
 
 def test_include_from_single_key_validation_failure(tmp_path):
-    """Test that !include_from validates single key and fails with wrong key."""
+    """Test that !include_from fails when expected key is missing from included file."""
     
-    # Create included file with wrong key
+    # Create included file with wrong key (missing expected "config" key)
     included_content = """
 wrong_key:
   value: 1
@@ -792,15 +796,15 @@ model:
     main_file = tmp_path / "main.yml"
     main_file.write_text(main_content.strip())
     
-    # Should fail validation
-    with pytest.raises(IncludeError, match="wrong_key.*Expected keys.*config"):
+    # Should fail because expected key "config" is missing
+    with pytest.raises(ResolutionError, match="did not resolve to a valid key 'config'"):
         load_config(str(main_file))
 
 
 def test_include_from_single_key_validation_multiple_keys_failure(tmp_path):
-    """Test that !include_from single key validation fails when file has multiple unexpected keys."""
+    """Test that !include_from succeeds when expected key exists, regardless of other keys."""
     
-    # Create included file with multiple keys but only one expected
+    # Create included file with multiple keys including the expected one
     included_content = """
 config:
   database_url: postgres://localhost
@@ -830,6 +834,11 @@ model:
     main_file = tmp_path / "main.yml"
     main_file.write_text(main_content.strip())
     
-    # Should fail validation
-    with pytest.raises(IncludeError, match="another_unexpected.*unexpected_key.*Expected keys.*config"):
-        load_config(str(main_file))
+    # Should succeed since "config" key exists (other keys are ignored)
+    config = load_config(str(main_file))
+    
+    assert "config" in config
+    assert config["config"]["database_url"] == "postgres://localhost"
+    assert "unexpected_key" not in config  # Not extracted
+    assert "another_unexpected" not in config  # Not extracted
+    assert "_helper" not in config  # Not extracted

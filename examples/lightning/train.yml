@@ -5,21 +5,18 @@ dataset: mnist
 model_name: mobilenet
 
 model: !include_from ${model_name}.yml
-train_dataset, val_dataset: !include_from ${dataset}.yml
-
+datasets: !include_from ${dataset}.yml
 
 # DataLoaders
 train_loader: !@torch.utils.data.DataLoader
-  dataset: ${train_dataset}
+  dataset: ${datasets.train_dataset}
   batch_size: 64
   shuffle: true
 
 val_loader: !@torch.utils.data.DataLoader
-  dataset: ${val_dataset}
+  dataset: ${datasets.val_dataset}
   batch_size: 64
   shuffle: false
-
-
 
 lightning_model: !@simple_cnn.LightningModel
   model: ${model}

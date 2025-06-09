@@ -6,8 +6,8 @@ from inspect import Parameter, signature
 from typing import Any
 
 from pyamlo.expressions import ExpressionEvaluator, is_expression
-from pyamlo.merge import _load_file, process_includes
-from pyamlo.tags import CallSpec, ImportSpec, IncludeSpec, InterpolatedCallSpec, ResolutionError
+from pyamlo.include import load_raw, process_includes
+from pyamlo.tags import CallSpec, ImportSpec, IncludeFromSpec, IncludeSpec, InterpolatedCallSpec, ResolutionError
 
 
 class Resolver:
@@ -25,14 +25,25 @@ class Resolver:
     def _(self, node: ImportSpec, path: str = "") -> Any:
         return _import_attr(node.path)
 
-    @resolve.register
-    def _(self, node: IncludeSpec, path: str = "") -> Any:
+    def _include(self, node, path: str = "") -> dict:
         fn = self.VAR_RE.sub(lambda m: str(self._get(m.group(1))), node.path)
         if hasattr(node, "_base_path") and node._base_path and not os.path.isabs(fn):
             fn = os.path.join(os.path.dirname(node._base_path), fn)
-        raw = _load_file(fn)
+        raw = load_raw(fn)
         merged = process_includes(raw, fn)
         return self.resolve(merged)
+
+    @resolve.register
+    def _(self, node: IncludeSpec, path: str = "") -> dict:
+        return self._include(node, path)
+
+    @resolve.register
+    def _(self, node: IncludeFromSpec, path: str = "") -> dict:
+        resolved = self._include(node, path)
+        try:
+            return resolved.pop(path.split(".")[-1])
+        except KeyError:
+            raise ResolutionError(f"Include '{node.path}' did not resolve to a valid key '{path.split('.')[-1]}'")
 
     @resolve.register
     def _(self, node: CallSpec, path: str = "") -> Any:

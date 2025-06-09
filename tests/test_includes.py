@@ -4,7 +4,7 @@ from yaml import MappingNode, ScalarNode
 from yaml.constructor import ConstructorError
 
 from pyamlo import load_config
-from pyamlo.merge import IncludeError, _load_traditional_include, _load_pkg_include, _load_file
+from pyamlo.include import IncludeError, load_raw, _load_include
 from pyamlo.tags import ConfigLoader, construct_include
 
 
@@ -19,21 +19,21 @@ def test_include_and_merging():
     assert config["dict"] == {"b": 3, "c": 4}
 
 
-def test_load_file_not_found():
+def test_load_raw_file_not_found():
     with pytest.raises(IncludeError):
-        _load_file("nonexistent_file.yaml")
+        load_raw("nonexistent_file.yaml")
 
 
-def test_traditional_include_invalid():
+def test_load_include_invalid():
     with pytest.raises(IncludeError):
-        _load_traditional_include(123)
+        _load_include(123)
 
 
 def test_load_file_yaml_error(tmp_path):
     badfile = tmp_path / "bad.yaml"
     badfile.write_text(": this is not valid yaml: [")
     with pytest.raises(IncludeError):
-        _load_file(str(badfile))
+        load_raw(str(badfile))
 
 
 def test_include_construction():
@@ -58,43 +58,3 @@ def test_construct_include_error():
         ConstructorError, match="expected a scalar node, but found mapping"
     ):
         construct_include(loader, node)
-
-
-def test_pkg_include_import_error(tmp_path):
-    test_file = tmp_path / "config.yml"
-    test_file.write_text("key: value")
-    result = _load_pkg_include(str(test_file), "nonexistent_package")
-    assert isinstance(result, dict)
-
-
-def test_pkg_include_config_notfound(monkeypatch, tmp_path):
-    class MockPackage:
-        __file__ = str(tmp_path / "pkg" / "__init__.py")
-
-    def mock_import(name):
-        return MockPackage()
-
-    monkeypatch.setattr("importlib.import_module", mock_import)
-    monkeypatch.setattr("os.path.dirname", lambda x: str(tmp_path / "pkg"))
-
-    with pytest.raises(IncludeError):
-        _load_pkg_include("nonexistent.yml", "test_package")
-
-
-def test_pkg_include_complex(monkeypatch, tmp_path):
-    pkg_dir = tmp_path / "pkg"
-    config_dir = pkg_dir / "configuration"
-    config_dir.mkdir(parents=True)
-    config_file = config_dir / "config.yml"
-    config_file.write_text("key: value")
-
-    init_file = pkg_dir / "__init__.py"
-    init_file.touch()
-
-    class MockPackage:
-        __file__ = str(init_file)
-
-    monkeypatch.setattr("importlib.import_module", lambda x: MockPackage())
-
-    result = _load_pkg_include("config.yml", "test_package")
-    assert result == {"test_package": {"key": "value"}}
