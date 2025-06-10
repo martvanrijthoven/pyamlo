@@ -1,6 +1,7 @@
 """CLI utilities for PYAMLO configuration overrides."""
 
 from io import StringIO
+import sys
 from typing import Any, Dict, Optional
 from functools import reduce
 
@@ -12,6 +13,26 @@ from pyamlo.tags import ConfigLoader
 
 class OverrideError(Exception):
     """Raised when there's an error processing a CLI override."""
+
+
+
+def _collect_cli_overrides() -> list[str]:
+    """Extract CLI overrides from command line arguments."""
+    return [
+        arg 
+        for arg in sys.argv[1:] 
+        if arg.startswith("pyamlo.") and "=" in arg
+    ]
+
+
+def _prepare_overrides(
+    overrides: Optional[list[str]], use_cli: bool
+) -> list[str]:
+    """Prepare all overrides from parameters and CLI."""
+    all_overrides = list(overrides) if overrides else []
+    if use_cli:
+        all_overrides.extend(_collect_cli_overrides())
+    return all_overrides
 
 
 def parse_cli_overrides(overrides: list[str]) -> Dict[str, Any]:
@@ -44,12 +65,12 @@ def parse_cli_overrides(overrides: list[str]) -> Dict[str, Any]:
     return result
 
 
-def process_cli(
-    config: Dict[str, Any], overrides: Optional[list[str]] = None
+def process_overrides(
+    config: Dict[str, Any], overrides: Optional[list[str]] = None, use_cli: bool = False
 ) -> Dict[str, Any]:
+    overrides = _prepare_overrides(overrides, use_cli)
     if not overrides:
         return config
-
     override_config = parse_cli_overrides(overrides)
     result = deep_merge(config, override_config)
     return result

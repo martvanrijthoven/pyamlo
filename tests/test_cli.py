@@ -5,7 +5,7 @@ from io import StringIO
 import pytest
 
 from pyamlo import load_config
-from pyamlo.cli import OverrideError, parse_cli_overrides, process_cli
+from pyamlo.override import OverrideError, parse_cli_overrides, process_overrides
 from pyamlo.tags import ExtendSpec, PatchSpec
 
 
@@ -70,9 +70,9 @@ def test_invalid_override_format():
 
 def test_process_cli_empty():
     config = {"app": {"name": "TestApp"}}
-    result = process_cli(config, None)
+    result = process_overrides(config, None)
     assert result == config
-    result = process_cli(config, [])
+    result = process_overrides(config, [])
     assert result == config
 
 
