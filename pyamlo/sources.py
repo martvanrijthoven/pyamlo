@@ -16,7 +16,7 @@ def _process_single_source(
     src: Union[str, Path, IO[str]], security_policy: SecurityPolicy
 ) -> dict[str, Any]:
     """Process a single configuration source and return the processed config."""
-    raw = _load_yaml(src, security_policy=security_policy)
+    raw = _load_source(src, security_policy=security_policy)
     if not raw:
         return {}
 
@@ -27,7 +27,7 @@ def _process_single_source(
     return process_includes(raw, src_path, security_policy=security_policy)
 
 
-def _load_yaml(
+def _load_source(
     source: Union[str, Path, IO[str]], security_policy: SecurityPolicy
 ) -> dict[str, Any]:
     """Load raw YAML from a file or file-like object."""
