@@ -6,6 +6,7 @@ from typing import Any
 
 from pyamlo.expressions import ExpressionEvaluator, is_expression
 from pyamlo.include import load_raw, process_includes
+from pyamlo.security import SecurityPolicy
 from pyamlo.tags import (
     CallSpec,
     ImportSpec,
@@ -19,9 +20,12 @@ from pyamlo.tags import (
 class Resolver:
     VAR_RE = re.compile(r"\$\{([^}]+)\}")
 
-    def __init__(self) -> None:
+    def __init__(self, security_policy=SecurityPolicy(restrictive=False)) -> None:
         self.ctx: dict[str, Any] = {}
-        self._expression_evaluator = ExpressionEvaluator(self._get)
+        self._expression_evaluator = ExpressionEvaluator(
+            self._get, security_policy=security_policy
+        )
+        self.security_policy = security_policy
 
     @singledispatchmethod
     def resolve(self, node: Any, path: str = "") -> Any:
@@ -29,14 +33,17 @@ class Resolver:
 
     @resolve.register
     def _(self, node: ImportSpec, path: str = "") -> Any:
+        if self.security_policy:
+            self.security_policy.check_import(node.path)
         return _import_attr(node.path)
 
     def _include(self, node, path: str = "") -> dict:
         fn = self.VAR_RE.sub(lambda m: str(self._get(m.group(1))), node.path)
         if hasattr(node, "_base_path") and node._base_path and not os.path.isabs(fn):
             fn = os.path.join(os.path.dirname(node._base_path), fn)
+        self.security_policy.check_include(fn)
         raw = load_raw(fn)
-        merged = process_includes(raw, fn)
+        merged = process_includes(raw, fn, security_policy=self.security_policy)
         return self.resolve(merged)
 
     @resolve.register
@@ -55,6 +62,7 @@ class Resolver:
 
     @resolve.register
     def _(self, node: CallSpec, path: str = "") -> Any:
+        self.security_policy.check_import(node.path)
         fn = _import_attr(node.path)
         args = [self.resolve(a, path) for a in node.args]
         kwargs = {k: self.resolve(v, path) for k, v in node.kwargs.items()}
@@ -64,13 +72,27 @@ class Resolver:
 
     @resolve.register
     def _(self, node: InterpolatedCallSpec, path: str = "") -> Any:
-        interpolated_path = re.sub(
-            r"@([a-zA-Z_][a-zA-Z0-9_]*)",
-            lambda m: str(self._get(m.group(1))),
-            node.path_template,
-        )
-
-        fn = _import_attr(interpolated_path)
+        path_template = node.path_template
+        
+        # Resolve the callable function based on path template format
+        if path_template.startswith('@') and '.' in path_template:
+            # Direct object method access: @object.method
+            obj_name, method_name = path_template[1:].split('.', 1)
+            fn = getattr(self._get(obj_name), method_name)
+        elif path_template.startswith('@'):
+            # Variable reference: @variable (could be string module path or callable object)
+            var_value = self._get(path_template[1:])
+            fn = _import_attr(var_value) if isinstance(var_value, str) else var_value
+        else:
+            # Module path with variable interpolation: some.module.@variable
+            interpolated_path = re.sub(
+                r'@([a-zA-Z_][a-zA-Z0-9_]*)',
+                lambda m: str(self._get(m.group(1))), 
+                path_template
+            )
+            fn = _import_attr(interpolated_path)
+        
+        # Resolve arguments and call the function
         args = [self.resolve(a, path) for a in node.args]
         kwargs = {k: self.resolve(v, path) for k, v in node.kwargs.items()}
         inst = _apply_call(fn, args, kwargs)
@@ -94,6 +116,8 @@ class Resolver:
     def _(self, node: str, path: str = "") -> Any:
         if m := self.VAR_RE.fullmatch(node):
             expression = m.group(1)
+            if is_expression(expression):
+                self.security_policy.check_expression(expression)
             return (
                 self._expression_evaluator.evaluate(expression)
                 if is_expression(expression)

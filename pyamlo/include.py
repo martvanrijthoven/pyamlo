@@ -33,20 +33,24 @@ def load_raw(path: str) -> dict[str, Any]:
 
 
 def process_includes(
-    raw: dict[str, Any], base_path: str | None = None
+    raw: dict[str, Any], base_path: str | None = None, security_policy=None
 ) -> dict[str, Any]:
     incs = raw.pop("include!", [])
     merged: dict[str, Any] = {}
     for entry in incs:
-        part = _load_include(entry, base_path)
+        part = _load_include(entry, base_path, security_policy=security_policy)
         deep_merge(merged, part)
     return deep_merge(merged, raw)
 
 
-def _load_include(entry: Any, base_path: str | None = None) -> dict[str, Any]:
+def _load_include(
+    entry: Any, base_path: str | None = None, security_policy=None
+) -> dict[str, Any]:
     if isinstance(entry, str):
         if base_path is not None and not os.path.isabs(entry):
             entry = os.path.join(os.path.dirname(base_path), entry)
+        if security_policy:
+            security_policy.check_include(entry)
         raw = load_raw(entry)
         set_base_paths(raw, entry)
         return raw

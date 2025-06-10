@@ -11,20 +11,31 @@ from pyamlo.merge import deep_merge
 from pyamlo.include import process_includes, set_base_paths
 from pyamlo.resolve import Resolver
 from pyamlo.tags import ConfigLoader
+from pyamlo.security import SecurityPolicy
 
 
-def _load_yaml(source: Union[str, Path, IO[str]]) -> dict[str, Any]:
+def _load_yaml(source: Union[str, Path, IO[str]], security_policy: SecurityPolicy) -> dict[str, Any]:
     """Load raw YAML from a file or file-like object."""
     if isinstance(source, (str, Path)):
         with open(source, "r") as f:
-            return yaml.load(f, Loader=ConfigLoader)
-    return yaml.load(source, Loader=ConfigLoader)
+            loader = ConfigLoader(f, security_policy=security_policy)
+            try:
+                return loader.get_single_data()
+            finally:
+                loader.dispose()
+    else:
+        loader = ConfigLoader(source, security_policy=security_policy)
+        try:
+            return loader.get_single_data()
+        finally:
+            loader.dispose()
 
 
 def load_config(
     source: Union[str, Path, IO[str], Sequence[Union[str, Path, IO[str]]]],
     overrides: Optional[list[str]] = None,
     use_cli: bool = False,
+    security_policy: SecurityPolicy = SecurityPolicy(restrictive=False),
 ) -> dict:
     """Parse YAML from one or more config sources, applying includes, merges, tags, and
     variable interpolation.
@@ -45,7 +56,7 @@ def load_config(
 
     config: dict[str, Any] = {}
     for src in sources:
-        raw = _load_yaml(src)
+        raw = _load_yaml(src, security_policy=security_policy)
         if raw:
             if hasattr(src, "name") and hasattr(src, "read"):
                 src_path = src.name
@@ -53,10 +64,9 @@ def load_config(
                 src_path = str(src)
             if src_path:
                 set_base_paths(raw, src_path)
-            processed = process_includes(raw, src_path)
+            processed = process_includes(raw, src_path, security_policy=security_policy)
             config = deep_merge(config, processed)
 
     if all_overrides:
         config = process_cli(config, all_overrides)
-    cfg = Resolver().resolve(config)
-    return cfg
+    return Resolver(security_policy=security_policy).resolve(config)

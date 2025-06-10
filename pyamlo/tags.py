@@ -4,6 +4,8 @@ from typing import Any, Hashable, Optional, Union
 
 from yaml import MappingNode, SafeLoader, ScalarNode, SequenceNode
 
+from pyamlo.security import SecurityPolicy
+
 
 class ResolutionError(Exception):
     """Problems during interpolation or object resolution."""
@@ -75,30 +77,33 @@ class IncludeFromSpec:
 
 
 class ConfigLoader(SafeLoader):
-    pass
+    def __init__(self, stream, security_policy=SecurityPolicy(restrictive=False)):
+        super().__init__(stream)
+        self.security_policy = security_policy
 
 
 def construct_env(loader: ConfigLoader, node: Union[ScalarNode, MappingNode]) -> Any:
+    
     if isinstance(node, ScalarNode):
         var = loader.construct_scalar(node)
+        loader.security_policy.check_env_var(var)
         val = os.environ.get(var)
         if val is None:
             raise ResolutionError(
                 f"Environment variable '{var}' not set {node.start_mark}"
             )
         return val
-
     elif isinstance(node, MappingNode):
         mapping = loader.construct_mapping(node, deep=True)
         var = mapping.get("var") or mapping.get("name")
         default = mapping.get("default")
+        loader.security_policy.check_env_var(var)
         val = os.environ.get(var, default)
         if val is None:
             raise ResolutionError(
                 f"Environment variable '{var}' not set and no default provided {node.start_mark}"
             )
         return val
-
     raise TagError(
         f"!env must be used with a scalar or mapping node at {node.start_mark}"
     )
@@ -150,13 +155,17 @@ def construct_interpolated_callspec(
 
 
 def construct_include(loader: ConfigLoader, node: ScalarNode) -> IncludeSpec:
-    return IncludeSpec(loader.construct_scalar(node))
+    path = loader.construct_scalar(node)
+    loader.security_policy.check_include(path)
+    return IncludeSpec(path)
 
 
 def construct_import(loader: ConfigLoader, node: ScalarNode) -> ImportSpec:
     if not isinstance(node, ScalarNode):
         raise TagError(f"!import must be used with a string path at {node.start_mark}")
-    return ImportSpec(loader.construct_scalar(node))
+    path = loader.construct_scalar(node)
+    loader.security_policy.check_import(path)
+    return ImportSpec(path)
 
 
 def construct_include_from(loader: ConfigLoader, node: ScalarNode) -> IncludeFromSpec:

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from pyamlo import load_config
+from pyamlo.security import SecurityPolicy
 
 
 def parse_args(args: List[str]) -> Tuple[list[Path], list[str], str | None]:
@@ -34,7 +35,17 @@ def main():
             raise ValueError("At least one config file must be provided")
 
         # Load config with CLI overrides
-        config = load_config(config_files, overrides=override_args)
+        security_policy = SecurityPolicy(
+            restrictive=True,
+            allowed_include_paths=["../*"],
+            allowed_env_vars=['USER'],
+            allowed_imports=["keras_utils.*", "tensorflow.*", "print"],
+            allow_expressions=True,
+        )
+        config = load_config(
+            config_files, overrides=override_args, security_policy=security_policy
+        )
+        # config = load_config(config_files, overrides=override_args)
 
         # If test output file is specified, write config as JSON for testing
         if cfg_output_file:

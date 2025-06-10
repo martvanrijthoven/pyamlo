@@ -3,6 +3,8 @@ from typing import Any
 
 import keyword
 
+from pyamlo.security import SecurityPolicy
+
 
 class ExpressionError(Exception):
     """Errors specific to expression evaluation."""
@@ -47,10 +49,13 @@ def _extract_variables(expression: str) -> list[str]:
 
 
 class ExpressionEvaluator:
-    def __init__(self, variable_resolver):
+    def __init__(self, variable_resolver, security_policy: SecurityPolicy):
         self._get = variable_resolver
+        self.security_policy = security_policy
 
     def evaluate(self, expression: str) -> Any:
+        if is_expression(expression):
+            self.security_policy.check_expression(expression)
         safe_expression, namespace = self._get_safe_expr_with_ns(expression)
         try:
             return eval(safe_expression, {"__builtins__": {}}, namespace)
