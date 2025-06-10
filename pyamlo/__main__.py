@@ -3,13 +3,12 @@
 import json
 import sys
 from pathlib import Path
-from pprint import pprint
 from typing import List, Tuple
 
 from pyamlo import load_config
 
 
-def parse_args(args: List[str]) -> Tuple[list[Path], list[str], str]:
+def parse_args(args: List[str]) -> Tuple[list[Path], list[str], str | None]:
     config_files = []
     override_args = []
     cfg_output_file = None
@@ -36,12 +35,12 @@ def main():
 
         # Load config with CLI overrides
         config = load_config(config_files, overrides=override_args)
-        
+
         # If test output file is specified, write config as JSON for testing
         if cfg_output_file:
-            with open(cfg_output_file, 'w') as f:
+            with open(cfg_output_file, "w") as f:
                 json.dump(config, f, indent=2, default=str)
-            
+
         return 0
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)

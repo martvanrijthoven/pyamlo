@@ -7,8 +7,6 @@ class MergeError(Exception):
     """Problems during merging or patching."""
 
 
-
-
 def deep_merge(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
     for key, val in b.items():
         existing = a.get(key)

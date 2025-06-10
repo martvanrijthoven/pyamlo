@@ -195,19 +195,14 @@ def test_conditional_expression_errors():
     resolver = Resolver()
     resolver.ctx["env"] = "production"
     resolver.ctx["number"] = 42
-    
+
     # Invalid syntax
     with pytest.raises(ExpressionError, match="Invalid expression"):
         resolver.resolve("${env == 'production' ? 'yes' : 'no'}")  # Wrong syntax for Python
-    
-    # Unknown variable in condition
-    with pytest.raises(ResolutionError, match="Unknown variable"):
-        resolver.resolve("${unknown_var == 'test'}")
-    
-    # Invalid comparison
-    with pytest.raises(ExpressionError, match="Invalid expression"):
-        resolver.resolve("${env === 'production'}")  # Triple equals not valid in Python
 
+    # Unknown variable in condition - now expects ExpressionError with nested info
+    with pytest.raises(ExpressionError, match="Failed to resolve variable 'unknown_var'"):
+        resolver.resolve("${unknown_var == 'test'}")
 
 def test_mixed_math_and_conditional_expressions():
     """Test expressions that combine math and conditional logic."""

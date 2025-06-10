@@ -2,7 +2,7 @@ import os
 from collections import UserDict, UserList
 from typing import Any, Hashable, Optional, Union
 
-from yaml import MappingNode, UnsafeLoader, ScalarNode, SequenceNode
+from yaml import MappingNode, SafeLoader, ScalarNode, SequenceNode
 
 
 class ResolutionError(Exception):
@@ -74,7 +74,7 @@ class IncludeFromSpec:
         self._base_path = base_path
 
 
-class ConfigLoader(UnsafeLoader):
+class ConfigLoader(SafeLoader):
     pass
 
 
@@ -87,9 +87,10 @@ def construct_env(loader: ConfigLoader, node: Union[ScalarNode, MappingNode]) ->
                 f"Environment variable '{var}' not set {node.start_mark}"
             )
         return val
+
     elif isinstance(node, MappingNode):
         mapping = loader.construct_mapping(node, deep=True)
-        var = mapping.get("var") or mapping.get("name")  # type: ignore
+        var = mapping.get("var") or mapping.get("name")
         default = mapping.get("default")
         val = os.environ.get(var, default)
         if val is None:
@@ -97,10 +98,10 @@ def construct_env(loader: ConfigLoader, node: Union[ScalarNode, MappingNode]) ->
                 f"Environment variable '{var}' not set and no default provided {node.start_mark}"
             )
         return val
-    else:
-        raise TagError(
-            f"!env must be used with a scalar or mapping node at {node.start_mark}"
-        )
+
+    raise TagError(
+        f"!env must be used with a scalar or mapping node at {node.start_mark}"
+    )
 
 
 def construct_extend(loader: ConfigLoader, node: SequenceNode) -> ExtendSpec:
@@ -115,22 +116,28 @@ def construct_patch(loader: ConfigLoader, node: MappingNode) -> PatchSpec:
     return PatchSpec(loader.construct_mapping(node, deep=True))
 
 
+def _construct_callspec_args(
+    loader: ConfigLoader, node: Union[MappingNode, SequenceNode, ScalarNode]
+) -> tuple[list[Any], dict[str, Any]]:
+    """Extract args and kwargs from a node."""
+    if isinstance(node, MappingNode):
+        return [], loader.construct_mapping(node, deep=True)
+    elif isinstance(node, SequenceNode):
+        return loader.construct_sequence(node, deep=True), {}
+    elif isinstance(node, ScalarNode):
+        scalar = loader.construct_scalar(node)
+        args = [] if scalar in (None, "") else [scalar]
+        return args, {}
+    raise TagError(f"Unsupported node type at {node.start_mark}")
+
+
 def construct_callspec(
     loader: ConfigLoader,
     suffix: str,
     node: Union[MappingNode, SequenceNode, ScalarNode],
 ) -> CallSpec:
-    if isinstance(node, MappingNode):
-        mapping: dict[Hashable, Any] = loader.construct_mapping(node, deep=True)
-        return CallSpec(suffix, [], mapping)  # type: ignore
-    if isinstance(node, SequenceNode):
-        seq: list[Any] = loader.construct_sequence(node, deep=True)
-        return CallSpec(suffix, seq, {})
-    if isinstance(node, ScalarNode):
-        val = loader.construct_scalar(node)
-        args: list[Any] = [] if val in (None, "") else [val]
-        return CallSpec(suffix, args, {})
-    raise TagError(f"Unsupported !@ tag '{suffix}' at {node.start_mark}")
+    args, kwargs = _construct_callspec_args(loader, node)
+    return CallSpec(suffix, args, kwargs)
 
 
 def construct_interpolated_callspec(
@@ -138,18 +145,8 @@ def construct_interpolated_callspec(
     suffix: str,
     node: Union[MappingNode, SequenceNode, ScalarNode],
 ) -> InterpolatedCallSpec:
-    """Constructor for !$ tags that defers path interpolation."""
-    if isinstance(node, MappingNode):
-        mapping: dict[Hashable, Any] = loader.construct_mapping(node, deep=True)
-        return InterpolatedCallSpec(suffix, [], mapping)  # type: ignore
-    if isinstance(node, SequenceNode):
-        seq: list[Any] = loader.construct_sequence(node, deep=True)
-        return InterpolatedCallSpec(suffix, seq, {})
-    if isinstance(node, ScalarNode):
-        val = loader.construct_scalar(node)
-        args: list[Any] = [] if val in (None, "") else [val]
-        return InterpolatedCallSpec(suffix, args, {})
-    raise TagError(f"Unsupported !$ tag '{suffix}' at {node.start_mark}")
+    args, kwargs = _construct_callspec_args(loader, node)
+    return InterpolatedCallSpec(suffix, args, kwargs)
 
 
 def construct_include(loader: ConfigLoader, node: ScalarNode) -> IncludeSpec:
@@ -164,14 +161,16 @@ def construct_import(loader: ConfigLoader, node: ScalarNode) -> ImportSpec:
 
 def construct_include_from(loader: ConfigLoader, node: ScalarNode) -> IncludeFromSpec:
     if not isinstance(node, ScalarNode):
-        line_info = f" at line {node.start_mark.line + 1}" if hasattr(node, 'start_mark') and node.start_mark else ""
-        raise TagError(f"!include_from must be used with a file path, not {node.tag}{line_info}")
-    
+        raise TagError(
+            f"!include_from must be used with a file path at {node.start_mark}"
+        )
+
     path = loader.construct_scalar(node)
-    if not path or not isinstance(path, str):
-        line_info = f" at line {node.start_mark.line + 1}" if hasattr(node, 'start_mark') and node.start_mark else ""
-        raise TagError(f"!include_from requires a non-empty file path{line_info}")
-    
+    if not path:
+        raise TagError(
+            f"!include_from requires a non-empty file path at {node.start_mark}"
+        )
+
     return IncludeFromSpec(path)
 
 

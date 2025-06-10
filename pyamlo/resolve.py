@@ -2,12 +2,18 @@ import importlib
 import os
 import re
 from functools import singledispatchmethod
-from inspect import Parameter, signature
 from typing import Any
 
 from pyamlo.expressions import ExpressionEvaluator, is_expression
 from pyamlo.include import load_raw, process_includes
-from pyamlo.tags import CallSpec, ImportSpec, IncludeFromSpec, IncludeSpec, InterpolatedCallSpec, ResolutionError
+from pyamlo.tags import (
+    CallSpec,
+    ImportSpec,
+    IncludeFromSpec,
+    IncludeSpec,
+    InterpolatedCallSpec,
+    ResolutionError,
+)
 
 
 class Resolver:
@@ -43,7 +49,9 @@ class Resolver:
         try:
             return resolved.pop(path.split(".")[-1])
         except KeyError:
-            raise ResolutionError(f"Include '{node.path}' did not resolve to a valid key '{path.split('.')[-1]}'")
+            raise ResolutionError(
+                f"Include '{node.path}' did not resolve to a valid key '{path.split('.')[-1]}'"
+            )
 
     @resolve.register
     def _(self, node: CallSpec, path: str = "") -> Any:
@@ -56,35 +64,13 @@ class Resolver:
 
     @resolve.register
     def _(self, node: InterpolatedCallSpec, path: str = "") -> Any:
-        # Handle variable interpolation in the path template
-        path_template = node.path_template
-        
-        # If the path starts with @variable, it means we want to access an object or its method
-        if path_template.startswith('@'):
-            var_name = path_template[1:]  # Remove the @ prefix
-            if '.' in var_name:
-                # Split on the first dot to separate object from method/attribute
-                obj_name, method_name = var_name.split('.', 1)
-                obj = self._get(obj_name)
-                fn = getattr(obj, method_name)
-            else:
-                # Entire path is a variable reference - could be a string (module path) or object
-                var_value = self._get(var_name)
-                if isinstance(var_value, str):
-                    # If it's a string, treat it as a module path to import
-                    fn = _import_attr(var_value)
-                else:
-                    # If it's already an object, use it directly
-                    fn = var_value
-        else:
-            # Handle regular module path with @variable substitutions
-            interpolated_path = re.sub(
-                r'@([a-zA-Z_][a-zA-Z0-9_]*)',
-                lambda m: str(self._get(m.group(1))), 
-                path_template
-            )
-            fn = _import_attr(interpolated_path)
-        
+        interpolated_path = re.sub(
+            r"@([a-zA-Z_][a-zA-Z0-9_]*)",
+            lambda m: str(self._get(m.group(1))),
+            node.path_template,
+        )
+
+        fn = _import_attr(interpolated_path)
         args = [self.resolve(a, path) for a in node.args]
         kwargs = {k: self.resolve(v, path) for k, v in node.kwargs.items()}
         inst = _apply_call(fn, args, kwargs)
@@ -108,31 +94,36 @@ class Resolver:
     def _(self, node: str, path: str = "") -> Any:
         if m := self.VAR_RE.fullmatch(node):
             expression = m.group(1)
-            if is_expression(expression):
-                return self._expression_evaluator.evaluate(expression)
-            else:
-                return self._get(expression)
-        return self.VAR_RE.sub(lambda m: self._resolve_interpolation(m.group(1)), node)
+            return (
+                self._expression_evaluator.evaluate(expression)
+                if is_expression(expression)
+                else self._get(expression)
+            )
+        return self.VAR_RE.sub(lambda m: self._resolve_var_to_string(m.group(1)), node)
 
-    def _resolve_interpolation(self, expression: str) -> str:
-        """Resolve a single interpolation expression to string."""
-        if is_expression(expression):
-            return str(self._expression_evaluator.evaluate(expression))
-        else:
-            return str(self._get(expression))
+    def _resolve_var_to_string(self, expression: str) -> str:
+        """Resolve any variable/expression to its string representation."""
+        result = (
+            self._expression_evaluator.evaluate(expression)
+            if is_expression(expression)
+            else self._get(expression)
+        )
+        return str(result)
 
     def _get(self, path: str) -> Any:
-        root, *rest = path.split(".")
-        obj = self.ctx.get(root)
+        parts = path.split(".")
+        obj = self.ctx.get(parts[0])
         if obj is None:
-            raise ResolutionError(f"Unknown variable '{root}'")
-        for tok in rest:
+            raise ResolutionError(f"Unknown variable '{parts[0]}'")
+
+        for part in parts[1:]:
             try:
-                obj = obj[tok] if isinstance(obj, dict) else getattr(obj, tok)
-            except Exception as e:
+                obj = obj[part] if isinstance(obj, dict) else getattr(obj, part)
+            except (KeyError, AttributeError) as e:
                 raise ResolutionError(
-                    f"Failed to resolve '{tok}' in '{path}': {e}"
+                    f"Failed to resolve '{part}' in '{path}': {e}"
                 ) from e
+
         return obj
 
 
@@ -144,19 +135,8 @@ def _import_attr(path: str):
 
 def _apply_call(fn, args, kwargs):
     try:
-        sig = signature(fn)
-        params = sig.parameters.values()
-
-        has_starargs = any(p.kind is Parameter.VAR_POSITIONAL for p in params)
-        num_positional = sum(
-            p.kind in (Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD)
-            for p in params
-        )
-
-        if not has_starargs and num_positional == 1 and len(args) > 1:
-            return fn([args], **kwargs)
-
-    except (ValueError, TypeError):
+        return fn(*args, **kwargs)
+    except TypeError:
         if len(args) > 1:
             return fn([args], **kwargs)
-    return fn(*args, **kwargs)
+        raise

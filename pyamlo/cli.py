@@ -1,7 +1,8 @@
 """CLI utilities for PYAMLO configuration overrides."""
 
+from io import StringIO
 from typing import Any, Dict, Optional
-from collections import defaultdict
+from functools import reduce
 
 import yaml
 
@@ -14,7 +15,7 @@ class OverrideError(Exception):
 
 
 def parse_cli_overrides(overrides: list[str]) -> Dict[str, Any]:
-    grouped_overrides = defaultdict(list)
+    result: Dict[str, Any] = {}
 
     for override in overrides:
         if "=" not in override:
@@ -27,28 +28,20 @@ def parse_cli_overrides(overrides: list[str]) -> Dict[str, Any]:
             continue
 
         parts = key[7:].split(".")
-        root = parts[0]
 
-        grouped_overrides[root].append((parts[1:], value))
+        try:
+            loader = ConfigLoader(StringIO(value))
+            parsed_value = loader.get_single_data()
+        except Exception:
+            try:
+                parsed_value = yaml.safe_load(value)
+            except yaml.YAMLError:
+                parsed_value = value
 
-    combined_yaml = ""
-    for root, entries in grouped_overrides.items():
-        combined_yaml += f"{root}:\n"
-        for parts, value in entries:
-            indent = "  "
-            for part in parts[:-1]:
-                combined_yaml += f"{indent}{part}:\n"
-                indent += "  "
-            if parts:
-                combined_yaml += f"{indent}{parts[-1]}: {value}\n"
-            else:
-                combined_yaml += f"{indent}{value}\n"
+        target = reduce(lambda d, k: d.setdefault(k, {}), parts[:-1], result)
+        target[parts[-1]] = parsed_value
 
-    try:
-        parsed = yaml.load(combined_yaml, Loader=ConfigLoader)
-        return parsed if parsed else {}
-    except yaml.YAMLError as e:
-        raise OverrideError(f"Invalid YAML in overrides: {e}")
+    return result
 
 
 def process_cli(

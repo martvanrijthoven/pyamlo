@@ -1,16 +1,27 @@
-
-
 import os
 from typing import Any
 import yaml
 
 from pyamlo.merge import deep_merge
-from pyamlo.tags import ConfigLoader
+from pyamlo.tags import ConfigLoader, IncludeFromSpec, IncludeSpec
 
 
 class IncludeError(Exception):
     """Problems during include! processing."""
-    
+
+
+def set_base_paths(data: Any, base_path: str) -> None:
+    """Recursively set base paths on IncludeSpec and IncludeAsSpec objects."""
+    if isinstance(data, (IncludeSpec, IncludeFromSpec)):
+        data.set_base_path(base_path)
+    elif isinstance(data, dict):
+        for value in data.values():
+            set_base_paths(value, base_path)
+    elif isinstance(data, list):
+        for item in data:
+            set_base_paths(item, base_path)
+
+
 def load_raw(path: str) -> dict[str, Any]:
     try:
         with open(path) as f:
@@ -37,8 +48,6 @@ def _load_include(entry: Any, base_path: str | None = None) -> dict[str, Any]:
         if base_path is not None and not os.path.isabs(entry):
             entry = os.path.join(os.path.dirname(base_path), entry)
         raw = load_raw(entry)
-        # Set base paths for any include specs in the loaded content
-        from pyamlo.config import _set_base_paths
-        _set_base_paths(raw, entry)
+        set_base_paths(raw, entry)
         return raw
     raise IncludeError(f"Invalid include entry: {entry!r}")

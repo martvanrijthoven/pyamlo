@@ -8,21 +8,9 @@ import yaml
 
 from pyamlo.cli import process_cli
 from pyamlo.merge import deep_merge
-from pyamlo.include import process_includes
+from pyamlo.include import process_includes, set_base_paths
 from pyamlo.resolve import Resolver
-from pyamlo.tags import ConfigLoader, IncludeSpec, IncludeFromSpec
-
-
-def _set_base_paths(data: Any, base_path: str) -> None:
-    """Recursively set base paths on IncludeSpec and IncludeAsSpec objects."""
-    if isinstance(data, (IncludeSpec, IncludeFromSpec)):
-        data.set_base_path(base_path)
-    elif isinstance(data, dict):
-        for value in data.values():
-            _set_base_paths(value, base_path)
-    elif isinstance(data, list):
-        for item in data:
-            _set_base_paths(item, base_path)
+from pyamlo.tags import ConfigLoader
 
 
 def _load_yaml(source: Union[str, Path, IO[str]]) -> dict[str, Any]:
@@ -40,27 +28,6 @@ def load_config(
 ) -> dict:
     """Parse YAML from one or more config sources, applying includes, merges, tags, and
     variable interpolation.
-
-    Order of processing:
-    1. For each config file:
-       - Load the YAML content
-       - Process include (relative to file's location)
-    2. Merge config files in order (later files override earlier ones)
-    3. Apply overrides (manual and/or CLI) if any
-    4. Resolve variables and instantiate objects
-
-    Args:
-        source: One or more config sources. Each can be:
-            - A path to a YAML file (as string or Path)
-            - A file-like object containing YAML
-            - A sequence of the above (files are merged in order)
-        overrides: Optional list of override strings in format ["key=value", "key.nested=value"]
-            Values can use YAML tags like !extend [4,5] or !patch {"debug": true}
-        use_cli: If True, automatically reads CLI overrides from sys.argv and merges them
-            with any manually provided overrides
-
-    Returns:
-        The resolved configuration dictionary
     """
 
     sources = (
@@ -85,7 +52,7 @@ def load_config(
             else:
                 src_path = str(src)
             if src_path:
-                _set_base_paths(raw, src_path)
+                set_base_paths(raw, src_path)
             processed = process_includes(raw, src_path)
             config = deep_merge(config, processed)
 
