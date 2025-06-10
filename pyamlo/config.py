@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 from typing import IO, Any, Optional, Sequence, Union
 
-import yaml
 
 from pyamlo.cli import process_cli
 from pyamlo.merge import deep_merge
@@ -14,7 +13,9 @@ from pyamlo.tags import ConfigLoader
 from pyamlo.security import SecurityPolicy
 
 
-def _load_yaml(source: Union[str, Path, IO[str]], security_policy: SecurityPolicy) -> dict[str, Any]:
+def _load_yaml(
+    source: Union[str, Path, IO[str]], security_policy: SecurityPolicy
+) -> dict[str, Any]:
     """Load raw YAML from a file or file-like object."""
     if isinstance(source, (str, Path)):
         with open(source, "r") as f:

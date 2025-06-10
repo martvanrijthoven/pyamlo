@@ -73,14 +73,10 @@ class Resolver:
     @resolve.register
     def _(self, node: InterpolatedCallSpec, path: str = "") -> Any:
         path_template = node.path_template
-        
-        # Resolve the callable function based on path template format
-        if path_template.startswith('@') and '.' in path_template:
-            # Direct object method access: @object.method
-            obj_name, method_name = path_template[1:].split('.', 1)
+        if path_template.startswith("@") and "." in path_template:
+            obj_name, method_name = path_template[1:].split(".", 1)
             fn = getattr(self._get(obj_name), method_name)
-        elif path_template.startswith('@'):
-            # Variable reference: @variable (could be string module path or callable object)
+        elif path_template.startswith("@"):
             var_value = self._get(path_template[1:])
             if isinstance(var_value, str):
                 if self.security_policy:
@@ -89,17 +85,15 @@ class Resolver:
             else:
                 fn = var_value
         else:
-            # Module path with variable interpolation: some.module.@variable
             interpolated_path = re.sub(
-                r'@([a-zA-Z_][a-zA-Z0-9_]*)',
-                lambda m: str(self._get(m.group(1))), 
-                path_template
+                r"@([a-zA-Z_][a-zA-Z0-9_]*)",
+                lambda m: str(self._get(m.group(1))),
+                path_template,
             )
             if self.security_policy:
                 self.security_policy.check_import(interpolated_path)
             fn = _import_attr(interpolated_path)
-        
-        # Resolve arguments and call the function
+
         args = [self.resolve(a, path) for a in node.args]
         kwargs = {k: self.resolve(v, path) for k, v in node.kwargs.items()}
         inst = _apply_call(fn, args, kwargs)
@@ -133,7 +127,6 @@ class Resolver:
         return self.VAR_RE.sub(lambda m: self._resolve_var_to_string(m.group(1)), node)
 
     def _resolve_var_to_string(self, expression: str) -> str:
-        """Resolve any variable/expression to its string representation."""
         result = (
             self._expression_evaluator.evaluate(expression)
             if is_expression(expression)

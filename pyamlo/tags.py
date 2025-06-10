@@ -83,7 +83,7 @@ class ConfigLoader(SafeLoader):
 
 
 def construct_env(loader: ConfigLoader, node: Union[ScalarNode, MappingNode]) -> Any:
-    
+
     if isinstance(node, ScalarNode):
         var = loader.construct_scalar(node)
         loader.security_policy.check_env_var(var)
