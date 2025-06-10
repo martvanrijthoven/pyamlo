@@ -34,7 +34,7 @@ def main():
         if not config_files:
             raise ValueError("At least one config file must be provided")
 
-        # Load config with CLI overrides - use permissive policy for backward compatibility
+        # Load config with CLI overrides
         security_policy = SecurityPolicy(restrictive=False)
         config = load_config(
             config_files, overrides=override_args, security_policy=security_policy
