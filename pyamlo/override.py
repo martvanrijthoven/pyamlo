@@ -15,19 +15,12 @@ class OverrideError(Exception):
     """Raised when there's an error processing a CLI override."""
 
 
-
 def _collect_cli_overrides() -> list[str]:
     """Extract CLI overrides from command line arguments."""
-    return [
-        arg 
-        for arg in sys.argv[1:] 
-        if arg.startswith("pyamlo.") and "=" in arg
-    ]
+    return [arg for arg in sys.argv[1:] if arg.startswith("pyamlo.") and "=" in arg]
 
 
-def _prepare_overrides(
-    overrides: Optional[list[str]], use_cli: bool
-) -> list[str]:
+def _prepare_overrides(overrides: Optional[list[str]], use_cli: bool) -> list[str]:
     """Prepare all overrides from parameters and CLI."""
     all_overrides = list(overrides) if overrides else []
     if use_cli:
