@@ -82,7 +82,12 @@ class Resolver:
         elif path_template.startswith('@'):
             # Variable reference: @variable (could be string module path or callable object)
             var_value = self._get(path_template[1:])
-            fn = _import_attr(var_value) if isinstance(var_value, str) else var_value
+            if isinstance(var_value, str):
+                if self.security_policy:
+                    self.security_policy.check_import(var_value)
+                fn = _import_attr(var_value)
+            else:
+                fn = var_value
         else:
             # Module path with variable interpolation: some.module.@variable
             interpolated_path = re.sub(
@@ -90,6 +95,8 @@ class Resolver:
                 lambda m: str(self._get(m.group(1))), 
                 path_template
             )
+            if self.security_policy:
+                self.security_policy.check_import(interpolated_path)
             fn = _import_attr(interpolated_path)
         
         # Resolve arguments and call the function

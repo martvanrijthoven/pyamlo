@@ -34,18 +34,11 @@ def main():
         if not config_files:
             raise ValueError("At least one config file must be provided")
 
-        # Load config with CLI overrides
-        security_policy = SecurityPolicy(
-            restrictive=True,
-            allowed_include_paths=["../*"],
-            allowed_env_vars=['USER'],
-            allowed_imports=["keras_utils.*", "tensorflow.*", "print"],
-            allow_expressions=True,
-        )
+        # Load config with CLI overrides - use permissive policy for backward compatibility
+        security_policy = SecurityPolicy(restrictive=False)
         config = load_config(
             config_files, overrides=override_args, security_policy=security_policy
         )
-        # config = load_config(config_files, overrides=override_args)
 
         # If test output file is specified, write config as JSON for testing
         if cfg_output_file:

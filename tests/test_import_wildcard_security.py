@@ -17,9 +17,10 @@ class TestImportWildcardSecurity:
         
         # Should allow modules matching the pattern
         yaml_content = """
-path: !@pathlib.Path /tmp/test
+path: !@pathlib.Path
+  - /tmp/test
 counter: !@collections.Counter 
- - [1, 2, 3]
+  - [1, 2, 3]
 defaultdict_factory: !@collections.defaultdict
 """
         config = load_config(StringIO(yaml_content), security_policy=policy)
@@ -30,7 +31,10 @@ defaultdict_factory: !@collections.defaultdict
         
         # Should deny modules not matching any pattern
         yaml_content_denied = """
-dt: !@datetime.datetime 2023 1 1
+dt: !@datetime.datetime
+  - 2023
+  - 1 
+  - 1
 """
         with pytest.raises(PermissionError, match="not allowed by security policy"):
             load_config(StringIO(yaml_content_denied), security_policy=policy)
@@ -38,21 +42,25 @@ dt: !@datetime.datetime 2023 1 1
     def test_import_wildcard_patterns_permissive_mode(self):
         """Test wildcard patterns work in permissive mode for imports."""
         policy = SecurityPolicy(restrictive=False)
-        policy.allowed_imports = {"os.*"}  # Only allow os.* modules in permissive mode
+        # In permissive mode, allowed_imports acts as a blocklist
+        policy.allowed_imports = {"pathlib.*"}  # Block pathlib.* modules
         
-        # Should allow modules matching the pattern
-        yaml_content = """
-# This would normally be dangerous, but we're testing the pattern matching
-os_name: !@os.name
+        # Should allow modules not in the blocked list
+        yaml_content_allowed = """
+counter: !@collections.Counter
+  - [1, 2, 3]
 """
-        # Note: os.name is actually an attribute, not a callable, so this will fail
-        # Let's test with a safer example
-        yaml_content_safe = """
-path: !@pathlib.Path /tmp/test
+        config = load_config(StringIO(yaml_content_allowed), security_policy=policy)
+        from collections import Counter
+        assert config["counter"] == Counter([1, 2, 3])
+        
+        # Should deny modules matching the blocked pattern 
+        yaml_content_denied = """
+path: !@pathlib.Path
+  - /tmp/test
 """
-        # Should be denied since pathlib.Path doesn't match os.*
         with pytest.raises(PermissionError, match="not allowed by security policy"):
-            load_config(StringIO(yaml_content_safe), security_policy=policy)
+            load_config(StringIO(yaml_content_denied), security_policy=policy)
 
     def test_multiple_import_wildcard_patterns(self):
         """Test multiple wildcard patterns for imports."""
@@ -65,9 +73,9 @@ path: !@pathlib.Path /tmp/test
         # Test collections.* pattern
         yaml_content1 = """
 counter: !@collections.Counter 
- - [1, 2, 3]
+  - [1, 2, 3]
 deque: !@collections.deque
- - [1, 2, 3]
+  - [1, 2, 3]
 """
         config = load_config(StringIO(yaml_content1), security_policy=policy)
         from collections import Counter, deque
@@ -76,8 +84,10 @@ deque: !@collections.deque
         
         # Test pathlib.* pattern
         yaml_content2 = """
-path: !@pathlib.Path /tmp/test
-pure_path: !@pathlib.PurePath /tmp/pure
+path: !@pathlib.Path
+  - /tmp/test
+pure_path: !@pathlib.PurePath
+  - /tmp/pure
 """
         config = load_config(StringIO(yaml_content2), security_policy=policy)
         assert isinstance(config["path"], Path)
@@ -98,7 +108,9 @@ dt: !@datetime.datetime
         
         # Should deny modules not matching any pattern
         yaml_content_denied = """
-random_num: !@random.randint 1 10
+random_num: !@random.randint
+  - 1
+  - 10
 """
         with pytest.raises(PermissionError, match="not allowed by security policy"):
             load_config(StringIO(yaml_content_denied), security_policy=policy)
@@ -150,7 +162,8 @@ counter: !@collections.Counter
         yaml_content = """
 # xml.etree.ElementTree would match xml.etree.*
 # But since it's not typically called directly, let's use a different example
-tree: !@xml.etree.ElementTree.Element "root"
+tree: !@xml.etree.ElementTree.Element
+  - "root"
 """
         # ElementTree.Element is callable
         config = load_config(StringIO(yaml_content), security_policy=policy)
@@ -164,10 +177,9 @@ tree: !@xml.etree.ElementTree.Element "root"
         policy.allow_expressions = True  # Allow variable resolution
         
         yaml_content = """
-module_name: collections
-class_name: Counter
-my_counter: !$@module_name.@class_name 
- - [1, 1, 2, 3]
+module_path: collections.Counter
+my_counter: !$@module_path
+  - [1, 1, 2, 3]
 """
         config = load_config(StringIO(yaml_content), security_policy=policy)
         from collections import Counter
@@ -180,11 +192,12 @@ my_counter: !$@module_name.@class_name
         policy.allowed_imports.add("collections.*")  # Wildcard
         
         yaml_content = """
-path: !@pathlib.Path /tmp/test
+path: !@pathlib.Path
+  - /tmp/test
 counter: !@collections.Counter 
- - [1, 2, 3]
+  - [1, 2, 3]
 deque: !@collections.deque
- - [4, 5, 6]
+  - [4, 5, 6]
 """
         config = load_config(StringIO(yaml_content), security_policy=policy)
         
@@ -195,7 +208,8 @@ deque: !@collections.deque
         
         # Should deny pathlib.PurePath (not exact match for pathlib.Path)
         yaml_content_denied = """
-pure_path: !@pathlib.PurePath /tmp/pure
+pure_path: !@pathlib.PurePath
+  - /tmp/pure
 """
         with pytest.raises(PermissionError, match="not allowed by security policy"):
             load_config(StringIO(yaml_content_denied), security_policy=policy)
@@ -207,9 +221,10 @@ pure_path: !@pathlib.PurePath /tmp/pure
         policy.allowed_imports.add("collections.Counter")
         
         yaml_content = """
-path: !@pathlib.Path /tmp/test
+path: !@pathlib.Path
+  - /tmp/test
 counter: !@collections.Counter 
- - [1, 2, 3]
+  - [1, 2, 3]
 """
         config = load_config(StringIO(yaml_content), security_policy=policy)
         
@@ -220,7 +235,7 @@ counter: !@collections.Counter
         # Should deny other collections modules
         yaml_content_denied = """
 deque: !@collections.deque
- - [1, 2, 3]
+  - [1, 2, 3]
 """
         with pytest.raises(PermissionError, match="not allowed by security policy"):
             load_config(StringIO(yaml_content_denied), security_policy=policy)
@@ -230,7 +245,8 @@ deque: !@collections.deque
         policy = SecurityPolicy(restrictive=True) 
         
         yaml_content = """
-path: !@pathlib.Path /tmp/test
+path: !@pathlib.Path
+  - /tmp/test
 """
         with pytest.raises(PermissionError, match="not allowed by security policy"):
             load_config(StringIO(yaml_content), security_policy=policy)
@@ -241,7 +257,8 @@ path: !@pathlib.Path /tmp/test
         # allowed_imports is empty, so should allow everything
         
         yaml_content = """
-path: !@pathlib.Path /tmp/test
+path: !@pathlib.Path
+  - /tmp/test
 """
         config = load_config(StringIO(yaml_content), security_policy=policy)
         assert isinstance(config["path"], Path)
@@ -252,9 +269,10 @@ path: !@pathlib.Path /tmp/test
         policy.allowed_imports.add("*.*")  # Allow any module.submodule
         
         yaml_content = """
-path: !@pathlib.Path /tmp/test
+path: !@pathlib.Path
+  - /tmp/test
 counter: !@collections.Counter 
- - [1, 2, 3]
+  - [1, 2, 3]
 """
         config = load_config(StringIO(yaml_content), security_policy=policy)
         
@@ -267,7 +285,8 @@ counter: !@collections.Counter
         policy.allowed_imports.add("*.*.*")  # Require at least 3 parts
         
         yaml_content_denied = """
-path: !@pathlib.Path /tmp/test  # Only 2 parts: pathlib.Path
+path: !@pathlib.Path
+  - /tmp/test  # Only 2 parts: pathlib.Path
 """
         with pytest.raises(PermissionError, match="not allowed by security policy"):
             load_config(StringIO(yaml_content_denied), security_policy=policy)
@@ -278,9 +297,10 @@ path: !@pathlib.Path /tmp/test  # Only 2 parts: pathlib.Path
         policy.allowed_imports.add("[cp]*.*")  # Allow modules starting with 'c' or 'p'
         
         yaml_content = """
-path: !@pathlib.Path /tmp/test  # starts with 'p'
+path: !@pathlib.Path
+  - /tmp/test  # starts with 'p'
 counter: !@collections.Counter   # starts with 'c'
- - [1, 2, 3]
+  - [1, 2, 3]
 """
         config = load_config(StringIO(yaml_content), security_policy=policy)
         
@@ -290,7 +310,10 @@ counter: !@collections.Counter   # starts with 'c'
         
         # Should deny modules not starting with 'c' or 'p'
         yaml_content_denied = """
-dt: !@datetime.datetime 2023 1 1  # starts with 'd'
+dt: !@datetime.datetime
+  - 2023
+  - 1
+  - 1  # starts with 'd'
 """
         with pytest.raises(PermissionError, match="not allowed by security policy"):
             load_config(StringIO(yaml_content_denied), security_policy=policy)

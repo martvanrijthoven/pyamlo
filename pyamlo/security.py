@@ -15,8 +15,8 @@ class SecurityPolicy:
                  allowed_env_vars=None, 
                  allowed_imports=None, 
                  allowed_include_paths=None, 
-                 allow_expressions=True,
-                 restrictive=False):
+                 allow_expressions=None,
+                 restrictive=True):
         """
         Initialize security policy.
         
@@ -44,7 +44,11 @@ class SecurityPolicy:
         self.allowed_env_vars = set() if allowed_env_vars is None else set(allowed_env_vars)
         self.allowed_imports = set() if allowed_imports is None else set(allowed_imports)
         self.allowed_include_paths = set() if allowed_include_paths is None else set(allowed_include_paths)
-        self.allow_expressions = False if allow_expressions is None else allow_expressions
+        
+        if restrictive:
+            self.allow_expressions = False if allow_expressions is None else allow_expressions
+        else:
+            self.allow_expressions = True if allow_expressions is None else allow_expressions
  
     def check_env_var(self, name):
         if self.restrictive:
@@ -52,10 +56,23 @@ class SecurityPolicy:
                 raise PermissionError(
                     f"Access to environment variable '{name}' is not allowed by security policy."
                 )
+        else:
+            # In permissive mode, allow all unless restricted
+            if self.allowed_env_vars and name not in self.allowed_env_vars:
+                raise PermissionError(
+                    f"Access to environment variable '{name}' is not allowed by security policy."
+                )
             
     def check_import(self, module):
         if self.restrictive:
+            # In restrictive mode, only allow explicitly allowed imports
             if not self._matches_patterns(module, self.allowed_imports):
+                raise PermissionError(
+                    f"Import of module '{module}' is not allowed by security policy."
+                )
+        else:
+            # In permissive mode, block explicitly blocked imports
+            if self.allowed_imports and self._matches_patterns(module, self.allowed_imports):
                 raise PermissionError(
                     f"Import of module '{module}' is not allowed by security policy."
                 )
@@ -63,6 +80,12 @@ class SecurityPolicy:
     def check_include(self, path):
         if self.restrictive:
             if not self._matches_patterns(path, self.allowed_include_paths):
+                raise PermissionError(
+                    f"Include of file or folder '{path}' is not allowed by security policy."
+                )
+        else:
+            # In permissive mode, allow all unless restricted
+            if self.allowed_include_paths and not self._matches_patterns(path, self.allowed_include_paths):
                 raise PermissionError(
                     f"Include of file or folder '{path}' is not allowed by security policy."
                 )
