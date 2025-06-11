@@ -3,6 +3,7 @@ from typing import Any
 import yaml
 
 from pyamlo.merge import deep_merge
+from pyamlo.security import SecurityPolicy
 from pyamlo.tags import ConfigLoader, IncludeFromSpec, IncludeSpec
 
 
@@ -33,7 +34,7 @@ def load_raw(path: str) -> dict[str, Any]:
 
 
 def process_includes(
-    raw: dict[str, Any], base_path: str | None = None, security_policy=None
+    raw: dict[str, Any], base_path: str | None = None, security_policy: SecurityPolicy = None
 ) -> dict[str, Any]:
     incs = raw.pop("include!", [])
     merged: dict[str, Any] = {}
@@ -44,7 +45,7 @@ def process_includes(
 
 
 def _load_include(
-    entry: Any, base_path: str | None = None, security_policy=None
+    entry: Any, base_path: str | None = None, security_policy: SecurityPolicy = None
 ) -> dict[str, Any]:
     if isinstance(entry, str):
         if base_path is not None and not os.path.isabs(entry):
