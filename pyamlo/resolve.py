@@ -73,6 +73,11 @@ class Resolver:
                     fn = _import_attr(var_value)
                 else:
                     fn = var_value
+            elif path_template.startswith("$") and "." in path_template and not re.search(r"\$", path_template[1:]):
+                # Case: !@$object.method - call method on existing object (method name has no $)
+                obj_name, method_name = path_template[1:].split(".", 1)
+                obj = self._get(obj_name)
+                fn = getattr(obj, method_name)
             else:
                 # Case: !@collections.$counter_type or !@$module.$class - interpolate $ variables within path
                 interpolated_path = re.sub(

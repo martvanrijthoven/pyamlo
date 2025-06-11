@@ -1,7 +1,7 @@
 lr: 0.001
 criterion: !@torch.nn.CrossEntropyLoss
 optimizer: !@torch.optim.Adam
-  params: !$@model.parameters
+  params: !@$model.parameters
   lr: ${lr}
 
 trainer_name: supervised
@@ -10,5 +10,5 @@ trainer: !include_from ./${trainer_name}.yml
 pbar: !@ignite.handlers.ProgressBar
   persist: true
 
-attach_pbar: !$@pbar.attach
+attach_pbar: !@$pbar.attach
   engine: ${trainer}

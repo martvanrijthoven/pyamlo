@@ -10,15 +10,15 @@ dataset: !include_from datasets/${dataset_name}.yml
 pooling: MaxPooling2D
 model: !include_from models/${model_name}.yml
 
-compile_step: !$@model.compile
+compile_step: !@$model.compile
   optimizer: ${optimizer_name}
   loss: "sparse_categorical_crossentropy"
   metrics: ["accuracy"]
 
-summary_step: !$@model.summary
+summary_step: !@$model.summary
 
 # Train the model
-history: !$@model.fit
+history: !@$model.fit
   x: ${dataset.x_train}
   y: ${dataset.y_train}
   batch_size: ${batch_size}
@@ -27,7 +27,7 @@ history: !$@model.fit
   verbose: 1
 
 # Evaluate on test set
-test_results: !$@model.evaluate
+test_results: !@$model.evaluate
   x: ${dataset.x_test}
   y: ${dataset.y_test}
   verbose: 1
