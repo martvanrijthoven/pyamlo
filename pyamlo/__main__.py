@@ -1,5 +1,3 @@
-"""Command line interface for PYAMLO."""
-
 import json
 import sys
 from pathlib import Path
