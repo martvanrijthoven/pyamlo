@@ -62,31 +62,9 @@ class Resolver:
     @resolve.register
     def _(self, node: CallSpec, path: str = "") -> Any:
         if node.is_interpolated:
-            path_template = node.path
-            if path_template.startswith("$") and "." not in path_template:
-                var_value = self._get(path_template[1:])
-                if isinstance(var_value, str):
-                    if self.security_policy:
-                        self.security_policy.check_import(var_value)
-                    fn = _import_attr(var_value)
-                else:
-                    fn = var_value
-            elif path_template.startswith("$") and "." in path_template and not re.search(r"\$", path_template[1:]):
-                obj_name, method_name = path_template[1:].split(".", 1)
-                obj = self._get(obj_name)
-                fn = getattr(obj, method_name)
-            else:
-                interpolated_path = re.sub(
-                    r"\$([a-zA-Z_][a-zA-Z0-9_]*)",
-                    lambda m: str(self._get(m.group(1))),
-                    path_template,
-                )
-                if self.security_policy:
-                    self.security_policy.check_import(interpolated_path)
-                fn = _import_attr(interpolated_path)
+            fn = self._resolve_interpolated_callable(node.path)
         else:
-            self.security_policy.check_import(node.path)
-            fn = _import_attr(node.path)
+            fn = self._resolve_direct_callable(node.path)
         
         args = [self.resolve(a, path) for a in node.args]
         kwargs = {k: self.resolve(v, path) for k, v in node.kwargs.items()}
@@ -143,6 +121,50 @@ class Resolver:
                 ) from e
 
         return obj
+
+    def _resolve_direct_callable(self, path: str) -> Any:
+        self.security_policy.check_import(path)
+        return _import_attr(path)
+    
+    def _resolve_interpolated_callable(self, path_template: str) -> Any:
+        if self._is_single_variable(path_template):
+            return self._resolve_single_variable(path_template)
+        elif self._is_method_call(path_template):
+            return self._resolve_method_call(path_template)
+        else:
+            return self._resolve_variable_interpolation(path_template)
+    
+    def _is_single_variable(self, path: str) -> bool:
+        return path.startswith("$") and "." not in path
+    
+    def _is_method_call(self, path: str) -> bool:
+        return (path.startswith("$") and 
+                "." in path and 
+                not re.search(r"\$", path[1:]))
+    
+    def _resolve_single_variable(self, path: str) -> Any:
+        var_value = self._get(path[1:])
+        if isinstance(var_value, str):
+            if self.security_policy:
+                self.security_policy.check_import(var_value)
+            return _import_attr(var_value)
+        else:
+            return var_value
+    
+    def _resolve_method_call(self, path: str) -> Any:
+        obj_name, method_name = path[1:].split(".", 1)
+        obj = self._get(obj_name)
+        return getattr(obj, method_name)
+    
+    def _resolve_variable_interpolation(self, path_template: str) -> Any:
+        interpolated_path = re.sub(
+            r"\$([a-zA-Z_][a-zA-Z0-9_]*)",
+            lambda m: str(self._get(m.group(1))),
+            path_template,
+        )
+        if self.security_policy:
+            self.security_policy.check_import(interpolated_path)
+        return _import_attr(interpolated_path)
 
 
 def _import_attr(path: str):
