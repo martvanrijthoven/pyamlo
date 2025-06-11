@@ -12,16 +12,16 @@ model_name: mobilenet
 
 # Load modular components
 model: !include_from ${model_name}.yml
-train_dataset, val_dataset: !include_from ${dataset}.yml
+dataset: !include_from ${dataset}.yml
 
 # DataLoaders
 train_loader: !@torch.utils.data.DataLoader
-  dataset: ${train_dataset}
+  dataset: ${dataset.train_dataset}
   batch_size: 64
   shuffle: true
 
 val_loader: !@torch.utils.data.DataLoader
-  dataset: ${val_dataset}
+  dataset: ${dataset.val_dataset}
   batch_size: 64
   shuffle: false
 
