@@ -62,10 +62,8 @@ class Resolver:
     @resolve.register
     def _(self, node: CallSpec, path: str = "") -> Any:
         if node.is_interpolated:
-            # Handle interpolated path with $ syntax
             path_template = node.path
             if path_template.startswith("$") and "." not in path_template:
-                # Case: !@$target_class - entire path is a single variable (no dots)
                 var_value = self._get(path_template[1:])
                 if isinstance(var_value, str):
                     if self.security_policy:
@@ -74,12 +72,10 @@ class Resolver:
                 else:
                     fn = var_value
             elif path_template.startswith("$") and "." in path_template and not re.search(r"\$", path_template[1:]):
-                # Case: !@$object.method - call method on existing object (method name has no $)
                 obj_name, method_name = path_template[1:].split(".", 1)
                 obj = self._get(obj_name)
                 fn = getattr(obj, method_name)
             else:
-                # Case: !@collections.$counter_type or !@$module.$class - interpolate $ variables within path
                 interpolated_path = re.sub(
                     r"\$([a-zA-Z_][a-zA-Z0-9_]*)",
                     lambda m: str(self._get(m.group(1))),
