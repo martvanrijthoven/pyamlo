@@ -12,7 +12,6 @@ from pyamlo.tags import (
     ImportSpec,
     IncludeFromSpec,
     IncludeSpec,
-    InterpolatedCallSpec,
     ResolutionError,
 )
 
@@ -62,38 +61,32 @@ class Resolver:
 
     @resolve.register
     def _(self, node: CallSpec, path: str = "") -> Any:
-        self.security_policy.check_import(node.path)
-        fn = _import_attr(node.path)
-        args = [self.resolve(a, path) for a in node.args]
-        kwargs = {k: self.resolve(v, path) for k, v in node.kwargs.items()}
-        inst = _apply_call(fn, args, kwargs)
-        self.ctx[path] = inst
-        return inst
-
-    @resolve.register
-    def _(self, node: InterpolatedCallSpec, path: str = "") -> Any:
-        path_template = node.path_template
-        if path_template.startswith("@") and "." in path_template:
-            obj_name, method_name = path_template[1:].split(".", 1)
-            fn = getattr(self._get(obj_name), method_name)
-        elif path_template.startswith("@"):
-            var_value = self._get(path_template[1:])
-            if isinstance(var_value, str):
-                if self.security_policy:
-                    self.security_policy.check_import(var_value)
-                fn = _import_attr(var_value)
+        if node.is_interpolated:
+            # Handle interpolated path with $ syntax
+            path_template = node.path
+            if path_template.startswith("$") and "." not in path_template:
+                # Case: !@$target_class - entire path is a single variable (no dots)
+                var_value = self._get(path_template[1:])
+                if isinstance(var_value, str):
+                    if self.security_policy:
+                        self.security_policy.check_import(var_value)
+                    fn = _import_attr(var_value)
+                else:
+                    fn = var_value
             else:
-                fn = var_value
+                # Case: !@collections.$counter_type or !@$module.$class - interpolate $ variables within path
+                interpolated_path = re.sub(
+                    r"\$([a-zA-Z_][a-zA-Z0-9_]*)",
+                    lambda m: str(self._get(m.group(1))),
+                    path_template,
+                )
+                if self.security_policy:
+                    self.security_policy.check_import(interpolated_path)
+                fn = _import_attr(interpolated_path)
         else:
-            interpolated_path = re.sub(
-                r"@([a-zA-Z_][a-zA-Z0-9_]*)",
-                lambda m: str(self._get(m.group(1))),
-                path_template,
-            )
-            if self.security_policy:
-                self.security_policy.check_import(interpolated_path)
-            fn = _import_attr(interpolated_path)
-
+            self.security_policy.check_import(node.path)
+            fn = _import_attr(node.path)
+        
         args = [self.resolve(a, path) for a in node.args]
         kwargs = {k: self.resolve(v, path) for k, v in node.kwargs.items()}
         inst = _apply_call(fn, args, kwargs)

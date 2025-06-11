@@ -53,11 +53,11 @@ counter: !@collections.Counter
             load_config(StringIO(yaml_content), security_policy=policy)
 
     def test_interpolated_callspec_tag_denied_by_default(self):
-        """Test that !$@ tag is denied by default restrictive security policy."""
+        """Test that !@$ tag is denied by default restrictive security policy."""
         policy = SecurityPolicy()  # Default restrictive mode
         yaml_content = """
 layer_type: Linear
-model: !$torch.nn.@layer_type
+model: !@torch.nn.$layer_type
   in_features: 10
   out_features: 5
 """
@@ -71,7 +71,7 @@ model: !$torch.nn.@layer_type
         
         yaml_content = """
 collection_type: Counter
-my_counter: !$collections.@collection_type 
+my_counter: !@collections.$collection_type 
  - [1, 1, 2, 3]
 """
         config = load_config(StringIO(yaml_content), security_policy=policy)
@@ -88,7 +88,7 @@ my_counter: !$collections.@collection_type
         yaml_content = """
 path_module: !@os.path
 path_type: Path
-good_path: !$pathlib.@path_type 
+good_path: !@pathlib.$path_type 
 """
         # This should fail because os.path.join is not allowed
         with pytest.raises(PermissionError):
@@ -187,7 +187,7 @@ counter: !@collections.Counter
         yaml_content = """
 container_type: Counter
 use_default: false
-my_container: !$collections.@container_type 
+my_container: !@collections.$container_type 
  - [1, 2, 2, 3]
 """
         config = load_config(StringIO(yaml_content), security_policy=policy)
@@ -202,7 +202,7 @@ my_container: !$collections.@container_type
         dangerous_yaml_content = """
 # Try to import potentially dangerous modules
 os_module: !@os.system "echo hello"
-subprocess_call: !$subprocess.@method "ls"
+subprocess_call: !@subprocess.$method "ls"
 method: call
 """
         with pytest.raises(PermissionError):
@@ -215,7 +215,7 @@ method: call
         
         yaml_content = """
 # Missing variable that would be interpolated
-bad_counter: !$collections.@missing_var 
+bad_counter: !@collections.$missing_var 
  - [1, 2, 3]
 """
         # This should fail during resolution, not security check

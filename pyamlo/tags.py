@@ -33,24 +33,12 @@ class CallSpec:
         path: str,
         args: list[Any],
         kwargs: dict[str, Any],
+        is_interpolated: bool = False,
     ) -> None:
         self.path: str = path
         self.args: list[Any] = args
         self.kwargs: dict[str, Any] = kwargs
-
-
-class InterpolatedCallSpec:
-    """A CallSpec that defers path interpolation until resolution time."""
-
-    def __init__(
-        self,
-        path_template: str,
-        args: list[Any],
-        kwargs: dict[str, Any],
-    ):
-        self.path_template = path_template  # Contains {variable} placeholders
-        self.args = args
-        self.kwargs = kwargs
+        self.is_interpolated: bool = is_interpolated
 
 
 class IncludeSpec:
@@ -142,16 +130,9 @@ def construct_callspec(
     node: Union[MappingNode, SequenceNode, ScalarNode],
 ) -> CallSpec:
     args, kwargs = _construct_callspec_args(loader, node)
-    return CallSpec(suffix, args, kwargs)
-
-
-def construct_interpolated_callspec(
-    loader: ConfigLoader,
-    suffix: str,
-    node: Union[MappingNode, SequenceNode, ScalarNode],
-) -> InterpolatedCallSpec:
-    args, kwargs = _construct_callspec_args(loader, node)
-    return InterpolatedCallSpec(suffix, args, kwargs)
+    if '$' in suffix:
+        return CallSpec(suffix, args, kwargs, is_interpolated=True)
+    return CallSpec(suffix, args, kwargs, is_interpolated=False)
 
 
 def construct_include(loader: ConfigLoader, node: ScalarNode) -> IncludeSpec:
@@ -184,7 +165,6 @@ def construct_include_from(loader: ConfigLoader, node: ScalarNode) -> IncludeFro
 
 
 ConfigLoader.add_multi_constructor("!@", construct_callspec)
-ConfigLoader.add_multi_constructor("!$", construct_interpolated_callspec)
 ConfigLoader.add_constructor("!env", construct_env)
 ConfigLoader.add_constructor("!extend", construct_extend)
 ConfigLoader.add_constructor("!patch", construct_patch)

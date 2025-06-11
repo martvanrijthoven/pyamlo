@@ -178,7 +178,7 @@ tree: !@xml.etree.ElementTree.Element
         
         yaml_content = """
 module_path: collections.Counter
-my_counter: !$@module_path
+my_counter: !@$module_path
   - [1, 1, 2, 3]
 """
         config = load_config(StringIO(yaml_content), security_policy=policy)

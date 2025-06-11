@@ -11,7 +11,7 @@ PYAMLO extends standard YAML with powerful features for complex configurations, 
 | `!include` | Include single file at key | `config: !include config.yml` |
 | `!include_from` | Include key from config  | `config: !include_from config.yml` |
 | `!@` | Instantiate Python objects | `!@datetime.datetime 2023 1 1` |
-| `!$@` | Dynamic object creation | `!$torch.nn.@layer_type` or `!$@func` |
+| `!@$` | Dynamic object creation | `!@collections.$counter_type` or `!@$target_class` |
 | `!import` | Import Python modules | `!import datetime.datetime` |
 | `!env` | Environment variables | `!env {var: API_KEY, default: none}` |
 | `!extend` | Extend existing lists | `items: !extend [4, 5, 6]` |
