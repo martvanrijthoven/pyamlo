@@ -131,8 +131,7 @@ class Resolver:
             return self._resolve_single_variable(path_template)
         elif self._is_method_call(path_template):
             return self._resolve_method_call(path_template)
-        else:
-            return self._resolve_variable_interpolation(path_template)
+        return self._resolve_variable_interpolation(path_template)
     
     def _is_single_variable(self, path: str) -> bool:
         return path.startswith("$") and "." not in path
@@ -148,8 +147,7 @@ class Resolver:
             if self.security_policy:
                 self.security_policy.check_import(var_value)
             return _import_attr(var_value)
-        else:
-            return var_value
+        return var_value
     
     def _resolve_method_call(self, path: str) -> Any:
         obj_name, method_name = path[1:].split(".", 1)
