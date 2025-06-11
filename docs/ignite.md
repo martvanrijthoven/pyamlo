@@ -22,14 +22,14 @@ include!:
 epochs: 1
 
 # Train model
-train_result: !$@trainer.run
+train_result: !@$trainer.run
   start_msg: "Starting training..."
   finish_msg: "Training completed!"
   data: ${train_loader}
   max_epochs: ${epochs}
 
 # Evaluate model
-eval_result: !$@evaluator.run
+eval_result: !@$evaluator.run
   start_msg: "Running evaluation..."
   finish_msg: "Evaluation completed!"
   data: ${val_loader}
@@ -89,7 +89,7 @@ val_dataset: !@torchvision.datasets.MNIST
 ```yaml
 model_name: cnn
 model: !include_from ./${model_name}.yml
-model: !$@model.to ${device}
+model: !@$model.to ${device}
 ```
 
 **models/cnn.yml**
@@ -127,7 +127,7 @@ model: !@torch.nn.Sequential
 ```yaml
 lr: 0.001
 optimizer: !@torch.optim.Adam
-  params: !$@model.parameters
+  params: !@$model.parameters
   lr: ${lr}
 
 loss_fn: !@torch.nn.CrossEntropyLoss

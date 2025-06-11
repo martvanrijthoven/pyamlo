@@ -21,12 +21,12 @@ epochs: 1
 validation_split: 0.1
 
 # Compile and train
-compile_step: !$@model.compile
+compile_step: !@$model.compile
   optimizer: ${optimizer_name}
   loss: "sparse_categorical_crossentropy"
   metrics: ["accuracy"]
 
-history: !$@model.fit
+history: !@$model.fit
   x: ${dataset.x_train}
   y: ${dataset.y_train}
   batch_size: ${batch_size}
@@ -34,7 +34,7 @@ history: !$@model.fit
   validation_split: ${validation_split}
   verbose: 1
 
-test_results: !$@model.evaluate
+test_results: !@$model.evaluate
   x: ${dataset.x_test}
   y: ${dataset.y_test}
   verbose: 0
