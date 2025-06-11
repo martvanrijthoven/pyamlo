@@ -26,21 +26,14 @@ def parse_args(args: List[str]) -> Tuple[list[Path], list[str], str | None]:
 
 
 def main():
-    """Main CLI entry point."""
     try:
-        # Parse arguments to separate config files from overrides
         config_files, override_args, cfg_output_file = parse_args(sys.argv[1:])
-
         if not config_files:
             raise ValueError("At least one config file must be provided")
-
-        # Load config with CLI overrides
         security_policy = SecurityPolicy(restrictive=False)
         config = load_config(
             config_files, overrides=override_args, security_policy=security_policy
         )
-
-        # If test output file is specified, write config as JSON for testing
         if cfg_output_file:
             with open(cfg_output_file, "w") as f:
                 json.dump(config, f, indent=2, default=str)
