@@ -38,16 +38,15 @@ def main():
 
         return 0
     except ValueError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        print(
-            "\nUsage: python -m pyamlo config.yaml [config2.yaml ...] [pyamlo.key=value ...]"
-        )
-        print("\nExamples:")
-        print("  python -m pyamlo config.yaml")
-        print("  python -m pyamlo base.yaml override.yaml pyamlo.debug=true")
-        print(
-            "  python -m pyamlo config.yaml pyamlo.app.name=MyApp pyamlo.database.host=localhost"
-        )
+        usage_text = f"""Error: {e}
+
+Usage: python -m pyamlo config.yaml [config2.yaml ...] [pyamlo.key=value ...]
+
+Examples:
+    python -m pyamlo config.yaml
+    python -m pyamlo base.yaml override.yaml pyamlo.debug=true
+    python -m pyamlo config.yaml pyamlo.app.name=MyApp pyamlo.database.host=localhost"""
+        print(usage_text, file=sys.stderr)
         return 1
     except Exception as e:
         print(f"Error loading configuration: {e}", file=sys.stderr)

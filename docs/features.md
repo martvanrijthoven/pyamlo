@@ -9,7 +9,7 @@ PYAMLO extends standard YAML with powerful features for complex configurations, 
 |--------|---------|---------|
 | `include!` | Include & merge files | `include!: [base.yml, env.yml]` |
 | `!include` | Include single file at key | `config: !include config.yml` |
-| `!include_from` | Include content as key(s) | `config1, config2: !include_from config.yml` |
+| `!include_from` | Include key from config  | `config: !include_from config.yml` |
 | `!@` | Instantiate Python objects | `!@datetime.datetime 2023 1 1` |
 | `!$@` | Dynamic object creation | `!$torch.nn.@layer_type` or `!$@func` |
 | `!import` | Import Python modules | `!import datetime.datetime` |
