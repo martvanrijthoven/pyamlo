@@ -82,28 +82,22 @@ class Resolver:
             out[key] = resolved_val
             self.ctx[child] = resolved_val
             
-            # Ensure parent paths can see the resolved child
+            # Ensure all parent paths are updated with resolved children
             if "." in child:
-                parent_path, child_key = child.rsplit(".", 1)
-                # Find all parent contexts and update them
-                parent_parts = parent_path.split(".")
-                for i in range(len(parent_parts)):
-                    ancestor_path = ".".join(parent_parts[:i+1])
-                    if ancestor_path in self.ctx and isinstance(self.ctx[ancestor_path], dict):
-                        # Navigate to the right position and set the value
-                        target_dict = self.ctx[ancestor_path]
-                        remaining_path = parent_parts[i+1:] + [child_key]
-                        
-                        # Navigate through the nested structure
-                        for part in remaining_path[:-1]:
-                            if part not in target_dict:
-                                target_dict[part] = {}
-                            target_dict = target_dict[part]
-                        
-                        # Set the final value
-                        if remaining_path:
-                            target_dict[remaining_path[-1]] = resolved_val
-                            
+                parts = child.split(".")
+                for i in range(len(parts) - 1):  # Don't include the child itself
+                    parent_path = ".".join(parts[:i+1])
+                    if parent_path in self.ctx and isinstance(self.ctx[parent_path], dict):
+                        # Navigate and update the nested structure
+                        target = self.ctx[parent_path]
+                        remaining_parts = parts[i+1:]
+                        for part in remaining_parts[:-1]:
+                            if part not in target:
+                                target[part] = {}
+                            target = target[part]
+                        if remaining_parts:
+                            target[remaining_parts[-1]] = resolved_val
+                    
         return out
 
     @resolve.register
