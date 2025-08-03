@@ -34,7 +34,9 @@ def load_raw(path: str) -> dict[str, Any]:
 
 
 def process_includes(
-    raw: dict[str, Any], base_path: str | None = None, security_policy: SecurityPolicy = None
+    raw: dict[str, Any],
+    base_path: str | None = None,
+    security_policy: SecurityPolicy = None,
 ) -> dict[str, Any]:
     incs = raw.pop("include!", [])
     merged: dict[str, Any] = {}

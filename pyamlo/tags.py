@@ -130,7 +130,7 @@ def construct_callspec(
     node: Union[MappingNode, SequenceNode, ScalarNode],
 ) -> CallSpec:
     args, kwargs = _construct_callspec_args(loader, node)
-    if '$' in suffix:
+    if "$" in suffix:
         return CallSpec(suffix, args, kwargs, is_interpolated=True)
     return CallSpec(suffix, args, kwargs, is_interpolated=False)
 

@@ -67,9 +67,25 @@ pip install pyamlo
 ```python
 from pyamlo import load_config
 
+# Load from YAML file
 config = load_config("examples/test_config.yaml")
 print(config)
 
+# Load from Python dictionary
+config_dict = {
+    "app": {"name": "MyApp", "workers": 4},
+    "database": {"pool_size": "${app.workers * 2}"}
+}
+config = load_config(config_dict)
+print(config)
+
+# Load from multiple sources (files and dictionaries)
+config = load_config([
+    "base_config.yaml",
+    {"app": {"debug": True}},
+    "override_config.yaml"
+])
+print(config)
 ```
 See for more details on the [examples documentation](https://martvanrijthoven.github.io/pyamlo/examples/).
 

@@ -11,7 +11,7 @@ from pyamlo.security import SecurityPolicy
 
 
 def load_config(
-    source: Union[str, Path, IO[str], Sequence[Union[str, Path, IO[str]]]],
+    source: Union[str, Path, IO[str], dict, Sequence[Union[str, Path, IO[str], dict]]],
     overrides: Optional[list[str]] = None,
     use_cli: bool = False,
     security_policy: SecurityPolicy = SecurityPolicy(restrictive=False),
