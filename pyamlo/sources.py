@@ -4,37 +4,74 @@ import os
 
 from pyamlo.merge import deep_merge
 from pyamlo.include import process_includes, set_base_paths
-from pyamlo.tags import ConfigLoader, CallSpec, ExtendSpec, PatchSpec
+from pyamlo.tags import ConfigLoader
 from pyamlo.security import SecurityPolicy
 
 
 def _process_dict_tags(data: Any, security_policy: SecurityPolicy) -> Any:
-    """Process YAML-style tags in dictionary data."""
-    if isinstance(data, dict):
-        return {k: _process_dict_tags(v, security_policy) for k, v in data.items()}
-    elif isinstance(data, list):
-        return [_process_dict_tags(item, security_policy) for item in data]
-    elif isinstance(data, str):
-        # Check for YAML tags in string values
-        if data.startswith("!@"):
-            # Object instantiation tag
-            parts = data[2:].strip().split(None, 1)
-            path = parts[0]
-            args = [parts[1]] if len(parts) > 1 else []
-            return CallSpec(path, args, {}, is_interpolated=False)
-        elif data.startswith("!env "):
-            # Environment variable tag
-            var = data[5:].strip()
-            security_policy.check_env_var(var)
-            val = os.environ.get(var)
-            if val is None:
-                raise ValueError(f"Environment variable '{var}' not set")
-            return val
-        elif data == "!extend":
-            return ExtendSpec([])
-        elif data == "!patch":
-            return PatchSpec({})
-    return data
+    """Process dictionary data - handle both raw dicts and dicts with YAML tag strings."""
+    
+    def has_yaml_tags(obj):
+        """Check if the data structure contains YAML tag-like strings."""
+        if isinstance(obj, dict):
+            return any(has_yaml_tags(v) for v in obj.values())
+        elif isinstance(obj, list):
+            return any(has_yaml_tags(item) for item in obj)
+        elif isinstance(obj, str):
+            return obj.startswith('!')
+        return False
+    
+    # If the dict contains no YAML tag strings, it's already fully resolved
+    if not has_yaml_tags(data):
+        return data
+    
+    # Otherwise, process YAML tags using the YAML stream approach (simpler than direct parsing)
+    from io import StringIO
+    import yaml
+    
+    def dict_to_yaml_text(obj, indent=0):
+        """Convert dict to YAML text without escaping tags."""
+        def format_value(val):
+            if isinstance(val, str):
+                # Don't quote strings that are YAML tags
+                if val.startswith('!'):
+                    return val
+                # Quote strings to preserve them as strings
+                dumped = yaml.safe_dump(val, default_flow_style=True).strip()
+                # Remove document separators
+                if dumped.endswith('\n...'):
+                    dumped = dumped[:-4]
+                elif dumped.endswith('...'):
+                    dumped = dumped[:-3]
+                return dumped
+            return str(val)
+        
+        if isinstance(obj, dict):
+            lines = []
+            for key, value in obj.items():
+                if isinstance(value, dict):
+                    lines.append("  " * indent + f"{key}:")
+                    lines.append(dict_to_yaml_text(value, indent + 1))
+                elif isinstance(value, list):
+                    lines.append("  " * indent + f"{key}:")
+                    for item in value:
+                        if isinstance(item, dict):
+                            lines.append("  " * (indent + 1) + "-")
+                            lines.append(dict_to_yaml_text(item, indent + 2))
+                        else:
+                            lines.append("  " * (indent + 1) + f"- {format_value(item)}")
+                else:
+                    lines.append("  " * indent + f"{key}: {format_value(value)}")
+            return '\n'.join(lines)
+        return str(obj)
+    
+    # Convert to YAML text and parse with ConfigLoader
+    yaml_text = dict_to_yaml_text(data)
+    loader = ConfigLoader(StringIO(yaml_text), security_policy=security_policy)
+    try:
+        return loader.get_single_data()
+    finally:
+        loader.dispose()
 
 
 def _load_source(

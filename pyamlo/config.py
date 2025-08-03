@@ -23,3 +23,28 @@ def load_config(
     config = merge_all_sources(sources, security_policy)
     config = process_overrides(config, overrides, use_cli)
     return Resolver(security_policy=security_policy).resolve(config)
+
+
+class Loader:
+    """A class to load and resolve configuration files."""
+
+    def __init__(
+        self, security_policy: SecurityPolicy = SecurityPolicy(restrictive=False)
+    ):
+        self.security_policy = security_policy
+
+    def load(
+        self,
+        source: Union[
+            str, Path, IO[str], dict, Sequence[Union[str, Path, IO[str], dict]]
+        ],
+        overrides: Optional[list[str]] = None,
+    ):
+        sources = get_sources(source)
+        config = merge_all_sources(sources, self.security_policy)
+        config = process_overrides(config, overrides, False)
+        return config
+
+    def resolve(self, config: dict) -> dict:
+        """Resolve a given configuration."""
+        return Resolver(security_policy=self.security_policy).resolve(config)
