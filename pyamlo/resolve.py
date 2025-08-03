@@ -78,7 +78,32 @@ class Resolver:
         self.ctx[path] = out
         for key, val in node.items():
             child = f"{path}.{key}" if path else key
-            out[key] = self.ctx[child] = self.resolve(val, child)
+            resolved_val = self.resolve(val, child)
+            out[key] = resolved_val
+            self.ctx[child] = resolved_val
+            
+            # Ensure parent paths can see the resolved child
+            if "." in child:
+                parent_path, child_key = child.rsplit(".", 1)
+                # Find all parent contexts and update them
+                parent_parts = parent_path.split(".")
+                for i in range(len(parent_parts)):
+                    ancestor_path = ".".join(parent_parts[:i+1])
+                    if ancestor_path in self.ctx and isinstance(self.ctx[ancestor_path], dict):
+                        # Navigate to the right position and set the value
+                        target_dict = self.ctx[ancestor_path]
+                        remaining_path = parent_parts[i+1:] + [child_key]
+                        
+                        # Navigate through the nested structure
+                        for part in remaining_path[:-1]:
+                            if part not in target_dict:
+                                target_dict[part] = {}
+                            target_dict = target_dict[part]
+                        
+                        # Set the final value
+                        if remaining_path:
+                            target_dict[remaining_path[-1]] = resolved_val
+                            
         return out
 
     @resolve.register
@@ -107,6 +132,11 @@ class Resolver:
         return str(result)
 
     def _get(self, path: str) -> Any:
+        # First, try to find the exact path in context
+        if path in self.ctx:
+            return self.ctx[path]
+        
+        # Fallback to traversing from root
         parts = path.split(".")
         obj = self.ctx.get(parts[0])
         if obj is None:
