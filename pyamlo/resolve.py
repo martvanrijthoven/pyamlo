@@ -52,11 +52,17 @@ class Resolver:
     @resolve.register
     def _(self, node: IncludeFromSpec, path: str = "") -> dict:
         resolved = self._include(node, path)
+        target_key = path.split(".")[-1]
+        
+        # Special case: if target key is '_', return entire content instead of looking for '_' key
+        if target_key == "_":
+            return resolved
+            
         try:
-            return resolved.pop(path.split(".")[-1])
+            return resolved.pop(target_key)
         except KeyError:
             raise ResolutionError(
-                f"Include '{node.path}' did not resolve to a valid key '{path.split('.')[-1]}'"
+                f"Include '{node.path}' did not resolve to a valid key '{target_key}'"
             )
 
     @resolve.register
@@ -79,8 +85,26 @@ class Resolver:
         for key, val in node.items():
             child = f"{path}.{key}" if path else key
             resolved_val = self.resolve(val, child)
-            out[key] = resolved_val
-            self.ctx[child] = resolved_val
+            
+            # Special handling for _ wildcard with IncludeFromSpec
+            if key == "_" and isinstance(val, IncludeFromSpec):
+                # Merge the resolved content directly into out instead of setting out[key]
+                if isinstance(resolved_val, dict):
+                    out.update(resolved_val)
+                    # Update context for all merged keys
+                    for merged_key, merged_val in resolved_val.items():
+                        merged_child = f"{path}.{merged_key}" if path else merged_key
+                        self.ctx[merged_child] = merged_val
+                    # Don't add the _ key itself to out or context
+                    # Skip the parent context updating for _ wildcard
+                    continue
+                else:
+                    # If resolved value is not a dict, treat it normally
+                    out[key] = resolved_val
+                    self.ctx[child] = resolved_val
+            else:
+                out[key] = resolved_val
+                self.ctx[child] = resolved_val
             
             # Ensure all parent paths are updated with resolved children
             if "." in child:
