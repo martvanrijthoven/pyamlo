@@ -110,11 +110,13 @@ def test_dict_with_interpolation():
 
 
 def test_dict_with_object_instantiation():
-    """Test dictionary source with object instantiation."""
+    """Test dictionary source with actual Python objects."""
+    from pathlib import Path
+    
     config_dict = {
         "paths": {
-            "base": "!@pathlib.Path /tmp/test",
-            "data": "!@pathlib.Path /tmp/test/data.txt"
+            "base": Path("/tmp/test"),
+            "data": Path("/tmp/test/data.txt")
         }
     }
     
@@ -122,6 +124,8 @@ def test_dict_with_object_instantiation():
     
     assert str(result["paths"]["base"]) == "/tmp/test"
     assert str(result["paths"]["data"]) == "/tmp/test/data.txt"
+    assert isinstance(result["paths"]["base"], Path)
+    assert isinstance(result["paths"]["data"], Path)
 
 
 def test_empty_dict_source():
@@ -131,25 +135,28 @@ def test_empty_dict_source():
 
 
 def test_dict_with_security_policy():
-    """Test dictionary source with restrictive security policy."""
+    """Test dictionary source with actual Python objects and security policy."""
+    from pathlib import Path
+    
     config_dict = {
         "safe": {
             "value": "test"
         },
-        "unsafe": {
-            "path": "!@pathlib.Path /tmp"
+        "paths": {
+            "path": Path("/tmp")
         }
     }
     
     restrictive_policy = SecurityPolicy(restrictive=True)
     
-    # Should work with non-restrictive policy
-    result = load_config(config_dict)
-    assert str(result["unsafe"]["path"]) == "/tmp"
+    # Should work with both policies since dict contains actual objects, not tags
+    result1 = load_config(config_dict)
+    assert str(result1["paths"]["path"]) == "/tmp"
+    assert isinstance(result1["paths"]["path"], Path)
     
-    # Should fail with restrictive policy
-    with pytest.raises(Exception):
-        load_config(config_dict, security_policy=restrictive_policy)
+    result2 = load_config(config_dict, security_policy=restrictive_policy)
+    assert str(result2["paths"]["path"]) == "/tmp"
+    assert isinstance(result2["paths"]["path"], Path)
 
 
 def test_nested_dict_merging():

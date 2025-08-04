@@ -95,17 +95,21 @@ def test_deep_nested_interpolation():
 
 def test_object_property_access():
     """Test accessing properties of instantiated objects."""
-    config1 = {
-        "stage": {
-            "step": {
-                "component1": {
-                    "path": "!@pathlib.Path /tmp/test/example.txt",
-                    "version": 1.0,
-                }
-            }
-        }
-    }
+    from io import StringIO
+    
+    # Step 1: Build config with YAML tags from YAML source
+    config1_yaml = """
+stage:
+  step:
+    component1:
+      path: !@pathlib.Path /tmp/test/example.txt
+      version: 1.0
+"""
+    
+    # Load and resolve the YAML config first
+    config1_built = load_config(StringIO(config1_yaml))
 
+    # Step 2: Use the built config with dict containing interpolations
     config2 = {
         "stage": {
             "step": {
@@ -118,7 +122,7 @@ def test_object_property_access():
         }
     }
 
-    result = load_config([config1, config2])
+    result = load_config([config1_built, config2])
     
     # Check that the object was created correctly
     path_obj = result["stage"]["step"]["component1"]["path"]
