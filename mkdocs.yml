@@ -67,9 +67,6 @@ plugins:
   - git-revision-date-localized:
       enable_creation_date: true
       type: date
-  - git-committers:
-      repository: martvanrijthoven/pyamlo
-      branch: main
 
 markdown_extensions:
   - pymdownx.highlight:

@@ -124,4 +124,9 @@ linting    = "ruff check pyamlo"
 typing     = "mypy pyamlo"
 all    = "black pyamlo && ruff check pyamlo && mypy pyamlo"
 
+[dependency-groups]
+dev = [
+    "hatch>=1.15.1",
+]
+
 
